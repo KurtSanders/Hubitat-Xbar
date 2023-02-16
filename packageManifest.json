@@ -1,0 +1,21 @@
+{
+	"packageName": "Hubitat → Xbar App for the Apple MacOS™ Menubar",
+	"author": "Kurt Sanders",
+	"version": "1.0.0",
+	"minimumHEVersion": "2.3.4.150",
+	"dateReleased": "2023-02-20",
+	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar/blob/master/README.md",
+	"licenseFile": "MIT",
+	"releaseNotes": "Re-developed for Xbar (Updated Bitbar) for Hubitat™.",
+	"apps" : [
+		{
+			"id" : "cb421dcc-2aa9-4d0c-82eb-40497d34623c",
+			"name": "Hubitat → Xbar",
+			"namespace": "kurtsanders",
+			"location": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/master/smartapps/kurtsanders/Hubitat→Xbar.groovy",
+			"required": true,
+			"primary": true,
+			"oauth": true
+		}
+	]
+}
