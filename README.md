@@ -25,7 +25,7 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 
 ## Prerequisites 
 *  Apple macOS 13.x with Python 3.x
-* [XBar](https://xbarapp.com/dl) 
+* [XBar](https://xbarapp.com/dl) (Freeware)
 * [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html)
 * Use of  Apple Terminal App (/System/Applications/Utilities/Terminal.app)
 * [Knowledge of installing and configuring software on macOS](https://www.google.com/search?q=how+to+install+software+on+mac&rlz=1C5CHFA_enUS503US503&oq=how+to+install+softwate&aqs=chrome.2.69i57j0l5.9308j0j4&sourceid=chrome&ie=UTF-8)
