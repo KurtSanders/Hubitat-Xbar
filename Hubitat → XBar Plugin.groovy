@@ -161,17 +161,17 @@ def thermostatOperatingStateHandler(evt) {
 
 def infoOff() {
     app.updateSetting("infoBool",[value:"false",type:"bool"])
-    if (infoBool) {log.warn "Info logging disabled."}
+    log.info "Info logging disabled after 30 minutes."
 }
 
 def debugOff() {
     app.updateSetting("debugBool",[value:"false",type:"bool"])
-    if (debugBool) {log.warn "Debug logging disabled."}
+    log.info "Debug logging disabled after 30 minutes."
 }
 
 def debugDevicesOff() {
     app.updateSetting("debugDevices",[value:"false",type:"bool"])
-    if (debugDevices) {log.warn "Debug Devices logging disabled."}
+    log.info "Debug Devices logging disabled after 30 minutes."
 }
 
 def setHSM() {
@@ -712,6 +712,16 @@ private mainPage() {
     def currentYear = new Date().format("yyyy", location.timeZone)
     dynamicPage(name: "mainPage", uninstall:true, install:true, submitOnChange: true) {
         def apiSetupState = (state.accessToken==null)?'Please complete API setup!':'API Setup is complete!'
+        section(hideable: true, hidden: true, "View Online Documentation for ${app.name}") {
+            href(name: "hrefNotRequiredhere",
+                 title: "${app.name} Documentation",
+                 required: false,
+                 image: "https://github.com/KurtSanders/Hubitat-Xbar/blob/main/Images/Help-Logo.png?raw=true",
+                 style: "external",
+                 url: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
+                 description: "Tap here to view the online documentation for ${app.name}"
+                )
+        }
         section( "API Access Setup" ) {
             app.updateSetting("testAPI", false)
             app.updateSetting("okSend", false)
@@ -756,7 +766,7 @@ private mainPage() {
         }
         section {
             section() {
-                paragraph("${bitBarLogo}" +
+                paragraph("${xBarLogo}" +
                           "<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D4PYWK33KARSS&source=url'>Please consider donating to this application via PayPal™.</a><br>" +
                           "<small><i>Copyright \u00a9 2018-${currentYear} SandersSoft™ Inc - All rights reserved.</i></small><br>")
             }
@@ -1453,5 +1463,5 @@ def supportedMusicPlayerDeviceCommands() {
     return ['nextTrack','pause','play','previousTrack','stop']
 }
 
-String getBitBarLogo(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/STBitBarApp-V2/master/Images/STBitBarApp-V2.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='BitBar Logo' height=60 align=left /><br>"}
-String getDoneImage(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/STBitBarApp-V2/master/Images/done.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Done!' height=60 align=left /><br>"}
+String getxBarLogo(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Hubitat → Xbar Logo' height=60 align=left /><br>"}
+String getDoneImage(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/done.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Done!' height=60 align=left /><br>"}
