@@ -727,7 +727,7 @@ private mainPage() {
             app.updateSetting("okSend", false)
             app.updateSetting("sendAPI", false)
             app.updateSetting("pushoverDevices", false)
-            href name: "APIPageLink", title: "${apiSetupState}", description: (state.endpoint == null)?"You must add these two API strings to ${app.name}":"", page: "APIPage"
+            href name: "APIPageLink", title: "${apiSetupState}", description: (state.endpoint == null)?"You must add this API Oauth string to ${app.name}":"", page: "APIPage"
         }
         section("Sensor/Device Management & Setup") {
             href name: "devicesManagementPageLink", title: "Select sensors/devices", description: "", page: "devicesManagementPage"
@@ -869,12 +869,25 @@ def APISendSMSPage() {
 
 def enableAPIPage() {
     dynamicPage(name: "enableAPIPage") {
+        section(hideable: true, hidden: true, "View Online Install and Configuration Documentation for ${app.name}") {
+            href(name: "hrefNotRequiredhere",
+                 title: "${app.name} Documentation",
+                 required: false,
+                 image: "https://github.com/KurtSanders/Hubitat-Xbar/blob/main/Images/Help-Logo.png?raw=true",
+                 style: "external",
+                 url: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
+                 description: "Tap here to view the online Install and Configuration documentation for ${app.name}"
+                )
+        }
         section() {
             if (initializeAppEndpoint()) {
-                paragraph "Woo hoo! The API is now enabled. Brace yourself, though. I hope you don't mind typing long strings of gobbledygook. Sorry I don't know of an easier way to transfer this to the PC. Anyways, tap Done to continue"
+                paragraph "Success! The OAuth API access token string for Xbar access is now enabled."
+                paragraph "You will need to add this API String on the next screen to the Xbar Plugin application."
+                paragraph "Please refer to the online install and configuration documentation for directions to complete these next steps"
+                paragraph "Tap Done to continue"
             }
             else {
-                paragraph "It looks like OAuth is not enabled in the ${app.name}. Please verify the OAuth setting in the Apps Code view.", title: "Looks like we have to enable OAuth.", required: true, state: null
+                paragraph "It looks like the API OAuth is not enabled in the ${app.name}. Please verify the OAuth setting in the Apps Code view.", title: "Looks like you have to enable OAuth.", required: true, state: null
             }
         }
     }
