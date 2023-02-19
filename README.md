@@ -1,4 +1,4 @@
-# Hubitat → Xbar (For Hubitat & Apple MacOS![macOS logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
+## Hubitat → Xbar (For Use with Hubitat Elevation® & Apple®![macOS logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
 -- 
 ### Version 1.x (Beta Release) 
 
@@ -8,7 +8,7 @@
 
 ### Features:
 
-* Designed only for use with [Xbar](https://xbarapp.com/dl), Hubitat® and Apple MacOS
+* Designed only for use with [Xbar](https://xbarapp.com/dl), Hubitat Elevation® and Apple®  MacOS
 * Quickly view and control various Hubitat®: 
    * Devices & Sensors
    * Hub Modes 
@@ -24,10 +24,10 @@ One can click on any controllable Hubitat device, mode or routine in the Mac's H
 Sensor battery levels can be displayed for devices that have a battery capability by depressing the Apple {option + R} keys as the Hubitat → Xbar menu is activated {being displayed}.
 
 ## Prerequisites 
-* Apple macOS 13.x with Python 3.x
+*  Apple macOS 13.x with Python 3.x
 * [XBar](https://xbarapp.com/dl) 
 * [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html)
-* Use of Apple Terminal App (/System/Applications/Utilities/Terminal.app)
+* Use of  Apple Terminal App (/System/Applications/Utilities/Terminal.app)
 * [Knowledge of installing and configuring software on macOS](https://www.google.com/search?q=how+to+install+software+on+mac&rlz=1C5CHFA_enUS503US503&oq=how+to+install+softwate&aqs=chrome.2.69i57j0l5.9308j0j4&sourceid=chrome&ie=UTF-8)
 * Member of the [Hubitat Community](https://community.hubitat.com/) for support and new release information.
 
@@ -39,8 +39,8 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
    * Set Xbar's preferences as: 
    		* :heavy_check_mark: 'Start at Login'
    		* :heavy_check_mark: 'Update Automatically'
-* Install Xbar Python Script [Hubitat_XBar.5m.py](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py) to your Xbar plugin folder ("~/Library/Application\ Support/xbar/plugins"). 
-	* Open the Apple **'Terminal' App** in your Mac Applications folder. 
+* Install Xbar Python Script **Hubitat_XBar.5m.py** to your Xbar plugin folder ("~/Library/Application\ Support/xbar/plugins") using the  Apple Terminal shell commands below. 
+	* Open the Apple **'Terminal' App** in your  Apple Applications folder. 
 	* Copy the following Apple Terminal commands below and paste each into the Terminal screen and press Enter:
 
 ```Shell
