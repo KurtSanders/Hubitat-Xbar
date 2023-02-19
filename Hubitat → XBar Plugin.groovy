@@ -778,14 +778,16 @@ def APIPage() {
     dynamicPage(name: "APIPage") {
         section("API Setup") {
             if (!state.accessToken) {
-                paragraph "Required: The API has not been setup. Tap below to enable it."
+                paragraph "Required: The Xbar API OAuth token has not been setup. Tap below to enable it."
                 href name: "enableAPIPageLink", title: "Enable API", description: "", page: "enableAPIPage"
             }
-            state.endpoint=getFullLocalApiServerUrl()+ "/?access_token=${state.accessToken}"
-            def localUri = getFullLocalApiServerUrl()+ "/Test/" + "?access_token=${state.accessToken}"
-            def XbarAPIString = "${state.accessToken}~${state.endpointURL}"
-            paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste the following API string from the red box below into Xbar's Plugin Browser View for <u>Hubitat XBar for MacOS</u> <b>Hubitat Oauth String</b>"
-            paragraph "<html><head></b><style>p.ex1{border: 5px solid red; padding-left: 10px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b></body></html>"
+            if (state.accessToken) {
+                state.endpoint=getFullLocalApiServerUrl()+ "/?access_token=${state.accessToken}"
+                def localUri = getFullLocalApiServerUrl()+ "/Test/" + "?access_token=${state.accessToken}"
+                def XbarAPIString = "${state.accessToken}~${state.endpointURL}"
+                paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste the following API string from the red box below into Xbar's Plugin Browser View for <u>Hubitat XBar for MacOS</u> <b>Hubitat Oauth String</b>"
+                paragraph "<html><head></b><style>p.ex1{border: 5px solid red; padding-left: 10px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b></body></html>"
+            }
         }
         section("API Testing Options") {
             input "testAPI", "bool",
