@@ -6,13 +6,13 @@
 	"dateReleased": "2023-02-20",
 	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar/blob/master/README.md",
 	"licenseFile": "MIT",
-	"releaseNotes": "Re-developed for Xbar (Updated Bitbar) for Hubitat™.",
+	"releaseNotes": "Completely re-engineered for use with core macOS Xbar application (Updated Bitbar). Integrtaion of Hubitat™ sensors, devices, modes and HSM on macOS menubar.",
 	"apps" : [
 		{
 			"id" : "cb421dcc-2aa9-4d0c-82eb-40497d34623c",
 			"name": "Hubitat → Xbar",
 			"namespace": "kurtsanders",
-			"location": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/master/smartapps/kurtsanders/Hubitat→Xbar.groovy",
+			"location": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat%20%E2%86%92%20XBar%20Plugin.groovy",
 			"required": true,
 			"primary": true,
 			"oauth": true
