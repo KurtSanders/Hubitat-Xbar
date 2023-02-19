@@ -106,18 +106,18 @@ mappings {
 }
 def test() {
     def msg = ["Http API Test Success!"]
-    if (debugBool) log.info msg
+    if (infoBool) log.info msg
     return msg
 }
 
 def installed() {
-    //	log.debug "Installed with settings: ${settings}\n"
+    if (debugBool) log.debug "Installed with settings: ${settings}\n"
 	initialize()
 }
 def uninstalled() {
 	if (state.endpoint) {
 		try {
-			if (debugBool) log.info "Revoking API access token"
+			if (infoBool) log.info "Revoking API access token"
 			revokeAccessToken()
 		}
 		catch (e) {
@@ -131,13 +131,21 @@ def updated() {
     log.info "${state.accessToken}~${state.endpointURL}"
     log.info "The Xbar Oauth API has been setup. Add the following API string to the Xbar Plugin Browser Hubitat Oauth String field"
     log.info "#####################################################################################"
-
 	unsubscribe()
+    if (infoBool) {
+        log.info "Info logging messages has been activated for the next 30 minutes."
+        runIn(1800,infoOff)
+    }
+    if (debugBool) runIn(1800,debugOff) {
+        log.info "Debug logging messages has been activated for the next 30 minutes."
+    }
+    if (debugDevices) runIn(1800,debugDevicesOff){
+        log.info "Debug Devices logging messages has been activated for the next 30 minutes."
+    }
 	initialize()
 }
 
 def initialize() {
-	subscribe(location, "hsmStatus", hsmHandler)
 	if(thermos)
     	thermos.each {
 			subscribe(it, "thermostatOperatingState", thermostatOperatingStateHandler)
@@ -151,17 +159,27 @@ def thermostatOperatingStateHandler(evt) {
 	state.lastThermostatOperatingState = now()
 }
 
-def hsmHandler(evt) {
-  if (debugBool) log.debug "hsmHandler value: ${evt.value}"
-  if (debugBool) log.debug "hsm state: ${location.hsmStatus}"
+def infoOff() {
+    app.updateSetting("infoBool",[value:"false",type:"bool"])
+    if (infoBool) {log.warn "Info logging disabled."}
+}
+
+def debugOff() {
+    app.updateSetting("debugBool",[value:"false",type:"bool"])
+    if (debugBool) {log.warn "Debug logging disabled."}
+}
+
+def debugDevicesOff() {
+    app.updateSetting("debugDevices",[value:"false",type:"bool"])
+    if (debugDevices) {log.warn "Debug Devices logging disabled."}
 }
 
 def setHSM() {
 	def command = params.id
-    if (debugBool) log.debug "setHSM called with id ${command}"
-    if (debugBool) log.debug "Current HSM State: ${location.hsmStatus}"
-    if (debugBool) log.debug "Test Mode: Not Operational"
-    if (debugBool) log.debug "Changed HSM State: ${location.hsmStatus}"
+    if (infoBool) log.info "setHSM called with id ${command}"
+    if (infoBool) "Current HSM State: ${location.hsmStatus}"
+    sendLocationEvent (name: "hsmSetArm", value: command)
+    if (infoBool) "Changed HSM State: ${location.hsmStatus}"
 }
 
 def setMode() {
@@ -174,16 +192,16 @@ def setMode() {
 
 def toggleSwitch() {
     def command = params.id
-    log.info "toggleSwitch called with id ${command}"
+    if (infoBool) log.info "toggleSwitch called with id ${command}"
     switches.each {
         if(it.id == command)
         {
-            log.info "Found switch ${it.displayName} with id ${it.id} with current value ${it.currentSwitch}"
+            if (infoBool) log.info "Found switch ${it.displayName} with id ${it.id} with current value ${it.currentSwitch}"
             if(it.currentSwitch == "on") {
-                log.info "Turning ${it.displayName} OFF"
+                if (infoBool) log.info "Turning ${it.displayName} OFF"
                 it.off()
             } else {
-                log.info "Turning ${it.displayName} ON"
+                if (infoBool) log.info "Turning ${it.displayName} ON"
                 it.on()
             }
             return
@@ -193,11 +211,11 @@ def toggleSwitch() {
 
 def toggleValve() {
 	def command = params.id
-	log.info "toggleValve called with id ${command}"
+	if (infoBool) log.info "toggleValve called with id ${command}"
     valves.each {
     	if(it.id == command)
         {
-            log.info "Found Valve ${it.displayName} with id ${it.id} with current value ${it.currentValve}"
+            if (infoBool) log.info "Found Valve ${it.displayName} with id ${it.id} with current value ${it.currentValve}"
             if(it.currentValve == "close")
             	it.open()
             else
@@ -211,7 +229,7 @@ def setMusicPlayer() {
 	def command 	= params.command
     def level 		= params.level
     def presetid 	= params.presetid
-    log.info "setMusicPlayer called with command ${command} for musicplayer id ${id} VolumeParm=${level} and presetid=${presetid}"
+    if (infoBool) log.info "setMusicPlayer called with command ${command} for musicplayer id ${id} VolumeParm=${level} and presetid=${presetid}"
     musicplayersWebSocket.each {
         if(it.id == id)  {
             if (debugBool) log.debug "Found Music Player: ${it.displayName} with id: ${it.id} with current volume level: ${it.currentVolume}"
@@ -543,16 +561,8 @@ def getMainDisplayData() {
     def resp = []
 
     if (displaySensorShowName) {
-        returnName = "hsm"
-        returnCapability = returnName
-        // if (debugBool) log.debug "hsmStatus = ${location.hsmStatus}"
-        returnValue = "${returnName}${location.hsmStatus}"
-        returnEmoji = returnValue
-        if (returnValue) {
-            resp << [name: returnName, label: 'HSM Status', value: returnValue, capability: returnCapability, emoji: returnEmoji];
-        }
+        resp << [name: "hsm", label: "HSM Status", value: location.hsmStatus, capability: "hsm", emoji: ":ok:"];
     }
-
     if (displaySensorCapabilitySize == 0) {
         resp << [name: 'N/A', label: 'N/A', value: 'N/A', capability: 'N/A', emoji: 'unknown'];
     } else {
@@ -596,7 +606,7 @@ def getStatus() {
     log.info "${app.name} getStatus() started at ${timeStamp} by ${params.nodename}"
     state.path = params.path
     if (params.text != null) {
-        if (debugBool) log.debug "Test = ${test}"
+        log.debug "API test was successfull"
         return
     }
     def newLabel = "${app.name}<span style='color:green;'> <font size='-1'>(Polled by ${params.nodename}@ ${lastUpdateTime.replace("AM", "am").replace("PM","pm")})</font></span>"
@@ -663,6 +673,7 @@ def getStatus() {
                        "sortTemperatureAscending"	: (sortTemperatureAscending == null) ? false : sortTemperatureAscending
                       ]
     def resp = ["hsmState" : location.hsmStatus,
+                "hubName"    : location.hub.name,
                 "Temp Sensors" : tempData,
                 "Contact Sensors" : contactData,
                 "Presence Sensors" : presenceData,
@@ -690,7 +701,7 @@ def getStatus() {
             }
         }
     }
-    log.info "getStatus routine completed. Returning ${resp.size()} keys"
+    log.info "The 'getStatus()' routine has completed. Returning ${resp.size()} keys, Hub mode is '${location.mode.capitalize()}', HSM is '${location.hsmStatus.capitalize()}' states."
     return resp
 }
 
@@ -729,15 +740,12 @@ private mainPage() {
                 app.updateSetting("changeLabel",[value:"false",type:"bool"])
             }
         }
-        section(hideable: true, hidden: true, "Debuging Options for Hubitat Logging") {
-            input "infoBool", "bool",
-                title: "Display general informational messages in the LOGS View",
-                default: false,
-                required: false
-            input "debugBool", "bool",
-                title: "Display general debug messages in the LOGS View",
-                default: false,
-                required: false
+        section(title: "Logging Options:", hideable: true, hidden: true) {
+            paragraph "Enable Info logging for 30 minutes will enable info logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for checking if the app is performing actions as expected."
+            input "infoBool", "bool", title: "Enable Info logging for 30 minutes", submitOnChange: false, required:false, defaultValue: false
+            paragraph "Enable Debug logging for 30 minutes will enable debug logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for troubleshooting problems."
+            input "debugBool", "bool", title: "Enable debug logging for 30 minutes", submitOnChange: false, required:false, defaultValue: false
+            paragraph "Enable Debug Device logging for 30 minutes will enable debug logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for troubleshooting problems."
             input "debugDevices", "enum",
                 title: "Select a Sensor capability category to send debuging information to IDE Live Logging Window",
                 options: ["Temp Sensors", "Contact Sensors", "Presence Sensors", "Motion Sensors", "Switches", "Locks",
@@ -998,14 +1006,14 @@ def devicesPage() {
 
 def iconsPage() {
     dynamicPage(name:"iconsPage", hideWhenEmpty: true) {
-        section("BROWSE Emoji Website Valid 'ShortCodes' List") {
+        section("Emoji Picker") {
             href(name: "hrefNotRequired",
-                 title: "BROWSE Emoji Website Valid 'ShortCodes' List",
+                 title: "BROWSE Emoji's",
                  required: false,
                  image: "http://emojipedia.org/static/img/favicons/mstile-144x144.png",
                  style: "external",
-                 url: "http://www.webpagefx.com/tools/emoji-cheat-sheet/",
-                 description: "tap here to view valid list of Emoji names in your mobile browser"
+                 url: "https://github-emoji-picker.vercel.app/",
+                 description: "Tap here to view valid list of Emoji names and cut & paste into the fields below"
                 )
         }
         section("Optional: Customize Sensor Type/Status Emoji Naming Display Options") {
@@ -1050,19 +1058,12 @@ def iconsPage() {
 
 def fontsPage() {
     dynamicPage(name:"fontsPage", hideWhenEmpty: true) {
-        section("Link: BROWSE List of VALID typeface names included with Apple macOS") {
-            href(name: "hrefNotRequired",
-                 title: "BROWSE List of typeface names included with Apple macOS",
-                 required: false,
-                 image: "https://raw.githubusercontent.com/KurtSanders/STBitBarApp-V2/master/Images/scale-to-size-icons.jpg",
-                 style: "external",
-                 url: "https://en.wikipedia.org/wiki/List_of_typefaces_included_with_macOS",
-                 description: "Tap this area to view a list of typeface names included with Apple macOS in your mobile browser")
-        }
-        section("Optional Main Menu: DISPLAY FONTS, COLORS & SEPARATOR BARS: Mac Font Name for Display (warning: The Font Name MUST exist on the Mac.  Leave blank for 'Menlo'") {
-            input "mainFontName", "text",
-                title: "Mac 'Main-Menu Bar' Font Name (default font is 'Menlo' if field is left empty).  Color auto-changes based on Primary Thermostat Operation Mode (Heat/Cool) from/to Red/Blue",
-                default: "Menlo",
+        section("Optional Main Menu: DISPLAY FONTS, COLORS & SEPARATOR BARS: Mac Font Name for Display (warning: The Font Name MUST exist on the Mac.  Leave blank for 'Arial'") {
+            input "mainFontName", "enum",
+                title: "Mac 'Main-Menu Bar' Font Name (default font is 'Arial' if field is left empty).  Color auto-changes based on Primary Thermostat Operation Mode (Heat/Cool) from/to Red/Blue",
+                default: "Arial",
+                options: fontChoiceList(),
+                multiple: false,
                 required: false
             input "mainFontSize", "number",
                 title: "Mac 'Main-Menu Bar' Font Pitch Size (default is '14').",
@@ -1074,6 +1075,7 @@ def fontsPage() {
                 title: "Data: Fixed Font Name (default font is 'Menlo' if field is left empty)",
                 default: "Menlo",
                 options: ["Menlo","Monaco","Consolas","Courier","MingLIU"],
+                multiple: false,
                 required: false
             input "fixedPitchFontSize", "number",
                 title: "Data: Fixed Font Pitch Size (default is '14').",
@@ -1093,23 +1095,25 @@ def fontsPage() {
             input "hortSeparatorBarBool", "bool",
                 title: "Use Horizontal Separator Lines to Separate Device Categories (Default is True)",
                 required: false
-            input "subMenuFontName", "text",
-                title: "Mac BitBar Sub-Menu Category Names: Font Name (default font is 'Menlo' if field is left empty).",
-                default: "Menlo",
+            input "subMenuFontName", "enum",
+                title: "Mac BitBar Sub-Menu Category Names: Font Name (default font is 'Arial' if field is left empty).",
+                default: "Arial",
+                options: fontChoiceList(),
+                multiple: false,
                 required: false
             input "subMenuFontSize", "number",
                 title: "Mac BitBar Sub-Menu Category Names: Font Pitch Size (default is '12').",
                 default: 12,
                 required: false
             input "subMenuFontColor", "enum",
-                title: "Mac BitBar Sub-Menu Category Names: Font Color (default Color is 'Black' if field left blank.  If Mac is in 'Dark Mode', Font Color will be set to 'White')",
-                default: "black",
+                title: "Mac BitBar Sub-Menu Category Names: Font Color (default Color is 'red' if field left blank.  If Mac is in 'Dark Mode', Font Color will be set to 'White')",
+                default: "red",
                 options: colorChoiceList(),
                 multiple: false,
                 required: false
             input "subMenuMoreColor", "enum",
-                title: "More... sub-menu: Font Color (default 'black')",
-                default: "black",
+                title: "More... sub-menu: Font Color (default 'purple')",
+                default: "purple",
                 options: colorChoiceList(),
                 multiple: false,
                 required: false
@@ -1279,10 +1283,10 @@ def optionsPage() {
             href name: "eventsPageLink", title: "Event History", description: "", page: "eventsPage"
         }
         section("Optional: Font Names, Pitch Size and Colors") {
-            href name: "fontsPageLink", title: "${app.name} Menu Text Display Settings", description: "", page: "fontsPage"
+            href name: "fontsPageLink", title: "${app.name} Menu Font Text Display Settings", description: "", page: "fontsPage"
         }
         section("Optional: Customize Sensor Status & Type Emoji Display Options") {
-            href name: "iconsPageLink", title: "Customize Sensor Status & Type Display Settings", description: "", page: "iconsPage"
+            href name: "iconsPageLink", title: "Customize Emoji's for Sensor Status", description: "", page: "iconsPage"
         }
         section("Optional: Limit Color Choices for 'Color Control' capable devices") {
             input "colorChoices", "enum",
@@ -1425,6 +1429,10 @@ def getHueSatLevel(color) {
 			break;
 	}
     return [hue: hueColor, saturation: saturation, level:100]
+}
+
+def fontChoiceList() {
+ return ['Arial','Arial Black','Helvetica','Verdana','Tahoma','Trebuchet MS','Gill Sans','Times New Roman','Georgia','Palatino','Baskerville','Courier','Lucida Console','Monaco','Optima']
 }
 
 def colorChoiceList() {
