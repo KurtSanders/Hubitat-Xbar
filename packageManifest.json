@@ -5,7 +5,7 @@
 	"minimumHEVersion": "2.3.4.150",
 	"dateReleased": "2023-02-20",
 	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar/blob/master/README.md",
-	"licenseFile": "MIT",
+	"licenseFile": "",
 	"releaseNotes": "Completely re-engineered for use with core macOS Xbar application (Updated Bitbar). Integrtaion of Hubitat™ sensors, devices, modes and HSM on macOS menubar.",
 	"apps" : [
 		{
