@@ -47,6 +47,7 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	cd ~/Library/Application\ Support/xbar/plugins
 	curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
 	sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+	exit
 ```
 
 * Install **'Hubitat → Xbar App'** via [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html) if not already installed.
