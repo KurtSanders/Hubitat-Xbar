@@ -787,7 +787,6 @@ def APIPage() {
                  description: "Tap here to view the online documentation for ${app.name}"
                 )
         }
-
         section("API OAuth Setup") {
             if (!state.accessToken) {
                 paragraph "<p style='color:red'>Required: The Xbar API OAuth token has not been setup. Tap below to enable it.</p>"
