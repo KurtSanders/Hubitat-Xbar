@@ -37,7 +37,7 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
+# import tempfile
 from datetime import datetime
 import time
 import timeit
@@ -638,11 +638,11 @@ else:
     formattedMainDisplay = "HE Xbar"
     print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=14', mainMenuColor))
 
-if favoriteDevicesBool:
-    original_stdout = sys.stdout
-    favoriteDevicesOutputDict = {}
-    fo = tempfile.TemporaryFile()
-    sys.stdout = fo
+#if favoriteDevicesBool:
+#    original_stdout = sys.stdout
+#    favoriteDevicesOutputDict = {}
+#    fo = tempfile.TemporaryFile()
+#    sys.stdout = fo
 
 # Set the static amount of decimal places based on setting
 if matchOutputNumberOfDecimals is True:
