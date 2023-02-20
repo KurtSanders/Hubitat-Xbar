@@ -34,33 +34,48 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 
 ## Installation
 
-* Install [Xbar application](https://xbarapp.com/) base software.
-   * [Click to download and install XBar application](https://xbarapp.com/dl) 
-   * Set Xbar's preferences as: 
-   		* :heavy_check_mark: 'Start at Login'
-   		* :heavy_check_mark: 'Update Automatically'
-* Install Xbar Python Script **Hubitat_XBar.5m.py** to your Xbar plugin folder ("~/Library/Application\ Support/xbar/plugins") using the  Apple Terminal shell commands below. 
-	* Open the Apple **'Terminal' App** in your  Apple Applications folder. 
-	* Copy the following Apple Terminal commands below and paste each into the Terminal screen and press Enter:
+* Hubitat© Elevation Steps
+	* Install **'Hubitat → Xbar App'** via [Hubitat Package Manager (HPM)](https://hubitatpackagemanager.hubitatcommunity.com/installing.html).
+		* Launch HPM
+		* Select Install 
+		* Search for 'Xbar'
+		* Press 'Next'
+		* Wait for HPM download and install to complete and **'Hubitat → Xbar App'** should automatically launch for configuration.
+		* Enable/Authorize OAuth API String in **'Hubitat → Xbar App'**
+		* Select the generated OAuth API string from the screen and (⌘-C) copy it (format xxx-xxx~http://xxx) from the screen.
+*  Apple© Computer macOS Steps
+	* Install the [Xbar](https://xbarapp.com/) application base software by [clicking here](https://github.com/matryer/xbar/releases/download/v2.1.7-beta/xbar.v2.1.7-beta.dmg) to download and install XBar application  
+	   * After Xbar install, there should be a 'xbar' in your macOS menubar as shown below <img src="http://xbarapp.com/public/img/xbar-menu-preview.png" width="300">
+	   * Set Xbar's preferences as: 
+	   		* :heavy_check_mark: 'Start at Login'
+	   		* :heavy_check_mark: 'Update Automatically'
+	* Install the Xbar Python Script **Hubitat_XBar.5m.py** to your Xbar plugin script file  folder ("~/Library/Application\ Support/xbar/plugins") using the  Apple Terminal shell commands below. 
+		* Launch the  Apple **'Terminal' App** located in your  Apple Applications folder under 'Utilities' sub-folder. 
+		* Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter:
 
-```Shell
-	cd ~/Library/Application\ Support/xbar/plugins
-	curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
-	sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
-	exit
-```
+	```Shell
+			cd ~/Library/Application\ Support/xbar/plugins
+			curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+			sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+			exit
+	```
+	* **Xbar Plugin Configuration Steps** 
+		* Configure the required OAuth API (format xxx-xxx~http://xxx) in the Xbar 'Hubitat_XBar.5m.py' plugin
+		* Click on the Xbar Icon in the top Mac menubar
+			* Select 'Open Plugin' from xbar> submenu or Press **⌘+E** key while xbar is in focus.
+			* Highlight the **Hubitat_XBar.5m.py** plugin
+			* Paste (⌘-V) your Hubitat's OAuth API string in the 'Hubitat OAuth string' variable field
 
-* Install **'Hubitat → Xbar App'** via [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html) if not already installed.
-	* Press 'Add User App' **'Hubitat → Xbar App'** on your Hub Applications view.
-	* Launch the installed **'Hubitat → Xbar App'** in Hubitat's Application view and authorize the OAuth API access and copy the generated OAuth API string (format xxx-xxx~http://xxx) for the app.
-		* Configure other user preferences in the **'Hubitat → Xbar App'**
-* Configure the required OAuth API (format xxx-xxx~http://xxx) in Xbar 'Hubitat_XBar.5m.py'
 ![Hubitat → Xbar App-V2 logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/HubitatXbarPluginScreen.jpg)
-	* Click on the Xbar Icon in the top Mac menubar
-	* Select 'Open Plugin' from xbar> submenu or Press **⌘+E** key while xbar is in focus.
-	* Highlight the **Hubitat_XBar.5m.py** plugin
-	* Enter your Hubitat's OAuth API string in the 'Hubitat OAuth string' variable field 
-* Hubitat™ Hub & devices
+
+* Hubitat© Elevation Hub
+	* Launch the **'Hubitat → Xbar App'** on your hub.
+	* Configure other **'Hubitat → Xbar App'** user preferences to select sensors, devices, and various display options.
+
+* Xbar Plugin Refresh
+	* **'Hubitat → Xbar App'** is set to automatically refresh values from Hubitat every 5 minutes.  Any more frequent polling may impact your hub's performance.  You may change the Xbar polling frequency in the Xbar's **Hubitat_XBar.5m.py** plugin options screen (⌘-E)
+	* The xbar screen display can be refreshed manually by clicking on the xbar logo or displayed sensor icon/value in the Apple menubar, and pressing (⌘-R)
+	* Some hubitat Sensors located in the Xbar displayed screen can be selected to chnage their state. 
 
 
 ## Issues / Limitations 
