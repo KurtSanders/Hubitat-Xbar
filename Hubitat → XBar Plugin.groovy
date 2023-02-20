@@ -776,9 +776,20 @@ private mainPage() {
 
 def APIPage() {
     dynamicPage(name: "APIPage") {
-        section("API Setup") {
+        section(hideable: true, hidden: true, "View Online Documentation for ${app.name}") {
+            href(name: "hrefNotRequiredhere",
+                 title: "${app.name} Documentation",
+                 required: false,
+                 image: "https://github.com/KurtSanders/Hubitat-Xbar/blob/main/Images/Help-Logo.png?raw=true",
+                 style: "external",
+                 url: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
+                 description: "Tap here to view the online documentation for ${app.name}"
+                )
+        }
+
+        section("API OAuth Setup") {
             if (!state.accessToken) {
-                paragraph "Required: The Xbar API OAuth token has not been setup. Tap below to enable it."
+                paragraph "<p style='color:red'>Required: The Xbar API OAuth token has not been setup. Tap below to enable it.</p>"
                 href name: "enableAPIPageLink", title: "Enable API", description: "", page: "enableAPIPage"
             }
             if (state.accessToken) {
