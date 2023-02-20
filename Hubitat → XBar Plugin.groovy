@@ -624,6 +624,7 @@ def getStatus() {
     def waterData = getWaterData()
     def valveData = getValveData()
     def optionsData = [ "useImages" 				: useImages,
+                       "debugBool"                  : debugBool,
                        "useAlbumArtworkImages" 		: useAlbumArtworkImages,
                        "sortSensorsName" 			: sortSensorsName,
                        "sortSensorsActive" 			: sortSensorsActive,
