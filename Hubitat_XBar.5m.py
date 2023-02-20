@@ -38,6 +38,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 import time
 import timeit
 import urllib.error
@@ -1440,12 +1441,13 @@ if waters is not None:
             colorSwitch = not colorSwitch
 
 # Configuration Options
-hortSeparatorBar()
 stop = timeit.default_timer()
-print (":crystal_ball: Hubitat → Xbar Actions and Shortcuts" + buildFontOptions(2))
-print ("--• Xbar Plugin GUI Options" + buildFontOptions())
-print ("----" + sys.argv[0] + buildFontOptions())
+hortSeparatorBar()
+td = datetime.now().strftime('%a %b %d, %I:%M:%S %p').replace(' AM', 'am').replace(' PM', 'pm')
 
+print (":crystal_ball: Hubitat → Xbar on {}{}".format(td,buildFontOptions(2)))
+print ("--• GUI Options {}".format(buildFontOptions()))
+print ("----Plugin: {} {}".format(scriptFile,buildFontOptions()))
 printFormatString = "----{:" + len(max(options, key=len)).__str__() + "} = {} {}"
 for option in sorted(options):
     if options[option] is not None and option == 'favoriteDevices' and len(favoriteDevices) > 1:
@@ -1455,7 +1457,8 @@ for option in sorted(options):
         print (printFormatString.format(
             option, options[option] if options[option] is not None else "{Default Set in GUI}", buildFontOptions(3)
         ))
-print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions(4))
+print ("--Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
+print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions())
 
 if favoriteDevicesBool:
     # noinspection PyUnboundLocalVariable
