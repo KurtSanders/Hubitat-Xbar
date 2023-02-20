@@ -1446,19 +1446,21 @@ hortSeparatorBar()
 td = datetime.now().strftime('%a %b %d, %I:%M:%S %p').replace(' AM', 'am').replace(' PM', 'pm')
 
 print (":crystal_ball: Hubitat → Xbar on {}{}".format(td,buildFontOptions(2)))
-print ("--• GUI Options {}".format(buildFontOptions()))
-print ("----Plugin: {} {}".format(scriptFile,buildFontOptions()))
-printFormatString = "----{:" + len(max(options, key=len)).__str__() + "} = {} {}"
-for option in sorted(options):
-    if options[option] is not None and option == 'favoriteDevices' and len(favoriteDevices) > 1:
-        for i, v in enumerate(options[option]):
-            print (printFormatString.format(option + "(" + str(i + 1) + ")", v, buildFontOptions(3)))
-    else:
-        print (printFormatString.format(
-            option, options[option] if options[option] is not None else "{Default Set in GUI}", buildFontOptions(3)
-        ))
+if (options['debugBool']):
+    print ("--• GUI Options {}".format(buildFontOptions()))
+    print ("----Plugin: {} {}".format(scriptFile,buildFontOptions()))
+    printFormatString = "----{:" + len(max(options, key=len)).__str__() + "} = {} {}"
+    for option in sorted(options):
+        if options[option] is not None and option == 'favoriteDevices' and len(favoriteDevices) > 1:
+            for i, v in enumerate(options[option]):
+                print (printFormatString.format(option + "(" + str(i + 1) + ")", v, buildFontOptions(3)))
+        else:
+            print (printFormatString.format(
+                option, options[option] if options[option] is not None else "{Default Set in GUI}", buildFontOptions(3)
+            ))
 print ("--Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
 print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions())
+
 
 if favoriteDevicesBool:
     # noinspection PyUnboundLocalVariable
