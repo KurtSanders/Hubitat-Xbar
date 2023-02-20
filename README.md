@@ -75,8 +75,7 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 * Xbar Plugin Refresh
 	* **'Hubitat → Xbar App'** is set to automatically refresh values from Hubitat every 5 minutes.  Any more frequent polling may impact your hub's performance.  You may change the Xbar polling frequency in the Xbar's **Hubitat_XBar.5m.py** plugin options screen (⌘-E)
 	* The xbar screen display can be refreshed manually by clicking on the xbar logo or displayed sensor icon/value in the Apple menubar, and pressing (⌘-R)
-	* Some hubitat Sensors located in the Xbar displayed screen can be selected to chnage their state. 
-
+	* Hubitat© sensors/devices which can change state, Hub mode and HPM states can be highlighted and clicked in the Xbar's screen display to change their state.  Xbar will automatically refresh after a few seconds to reflect the new selected sensor states.  Some Hubitat© sensors/devices may not display accurately if they are slow to reflect a state change on the hub.  These sluggish devices will eventually reflect their correct state in Xbar when they are eventually updated on the Hubitat© hub. 
 
 ## Issues / Limitations 
 1. The Hubitat → Xbar  App is capable of cycling through multiple status bar items.  However, this Hubitat → Xbar  Plugin is designed to only display a ** temperature sensor, contact sensor, lock status, or switch sensor** at the top with the rest of the sensors displayed in the dropdown. 
