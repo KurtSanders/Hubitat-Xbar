@@ -4,7 +4,7 @@
 # Author: SandersSoft (c) 2020,2021,2022,2023
 # Hubitat_XBar.5m.py
 # https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py
-# This executable Python3 file must be installed in the XBar Plugins system directory
+# This executable Python3 file must be installed in the XBar Plugins application directory (~/Library/Application\ Support/xbar/plugins)
 #
 # <xbar.title>Hubitat → XBar for MacOS</xbar.title>
 # <xbar.version>v1.0</xbar.version>
@@ -37,7 +37,6 @@ import os
 import re
 import subprocess
 import sys
-# import tempfile
 from datetime import datetime
 import time
 import timeit
@@ -430,7 +429,6 @@ hortSeparatorBarBool = getOptions("hortSeparatorBarBool", True)
 hsmDisplayBool = getOptions("hsmDisplayBool", True)
 eventsTimeFormat = getOptions("eventsTimeFormat", "12 Hour Clock Format with AM/PM")
 sortTemperatureAscending = getOptions("sortTemperatureAscending", False)
-favoriteDevices = getOptions("favoriteDevices", None)
 colorChoices = getOptions("colorChoices", None)
 colorBulbEmoji = getOptions("colorBulbEmoji", "🌈")
 dimmerBulbEmoji = getOptions("dimmerBulbEmoji", "🔆")
@@ -528,13 +526,6 @@ if sortSensorsName is True:
         presences = sorted(presences, key=lambda k: k[sortkey])
     if modes is not None:
         modes = sorted(modes, key=lambda k: k[sortkey])
-
-# Add a section to the submenu for special devices designated in the SmartApp
-if DEBUG is False and favoriteDevices is not None:
-    favoriteDevicesBool = True
-    favoriteDevices = sorted(favoriteDevices)
-else:
-    favoriteDevicesBool = False
 
 # if sortSensorsActive is True or mainMenuAutoSize is True:
 if sortSensorsActive is True:
@@ -772,10 +763,6 @@ if temps is not None:
                 subMenuText = "--"
             print(subMenuText, sensor['name'], whiteSpace, currentValue + degree_symbol, \
                   buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                # noinspection PyUnboundLocalVariable
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + \
-                                                            currentValue + degree_symbol
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 try:
                     eventGroupByDate([d for d in sensor['eventlog'] if d['name'] in "temperature"], subMenuText, "°")
@@ -816,8 +803,6 @@ if relativeHumidityMeasurements is not None:
                     print("--{} ({})".format(menuTitle, str(countSensors - mainMenuMaxItems)), buildFontOptions())
                 subMenuText = "--"
             print(subMenuText, sensor['name'], whiteSpace, currentValue + "%", buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + currentValue + "%"
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog'] if d['name'] in "humidity"], subMenuText, "%")
             if sensor['battery'] != 'N/A':
@@ -908,8 +893,6 @@ if contacts is not None:
                                              buildFontOptions())
                 subMenuText = "--"
             print(subMenuText, sensor['name'], whiteSpace, sym, buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + sym
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog']
                                   if d['name'] in ['status', 'contact', 'acceleration']], subMenuText, "")
@@ -951,8 +934,6 @@ if motion is not None:
                 if not subMenuCompact: print("-- " + menuTitle + " (" + str(countSensors - mainMenuMaxItems) + ")")
                 subMenuText = "--"
             print(subMenuText, sensor['name'], whiteSpace, sym, buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + sym
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog'] if d['name'] == 'motion'], subMenuText, "")
             if sensor['battery'] != 'N/A':
@@ -1006,8 +987,6 @@ if presences is not None:
                 notPresentMenuText = "--"
             colorText = 'color=#333333' if colorSwitch else 'color=#666666'
             print(subMenuText + notPresentMenuText, sensor['name'], whiteSpace, emoji, buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + emoji
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog'] if d['name'] in 'presence'], subMenuText, "")
             if sensor['battery'] != 'N/A':
@@ -1068,8 +1047,6 @@ if locks is not None:
                 print(subMenuText, sensor['name'] + ' is ' + sensor[
                     'value'].capitalize(), whiteSpace, sym, buildFontOptions(3) + colorText + ' shell=' + callbackScript, \
                       ' param1=request param2=' + currentLockURL, ' param3={}'.format(utilities.devWaitSecs("locks")), lock_param4, ' terminal=false refresh=false')
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + sym
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate(
                     [d for d in sensor['eventlog'] if d['value'] in
@@ -1141,8 +1118,6 @@ if switches is not None:
                 print(subMenuText, thisSensor, whiteSpace, sym, buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, \
                       ' param1=request param2=' + currentSwitchURL, ' param3=' + smartAppSecret, switch_param4, ' terminal=false refresh=false')
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + sym
             indent = ""
             if sensor['isDimmer'] is True:
                 subMenuText = subMenuText + '--'
@@ -1246,8 +1221,6 @@ if musicplayers is not None:
             else:
                 print(subMenuText, sensor['name'], whiteSpace, sym, buildFontOptions(3) + colorText)
 
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + whiteSpace + " " + sym
             if sensor['level'] is not None:
                 if sensor['manufacturer'] is not None:
                     print("{}--{}".format(subMenuText, sensor['manufacturer']), buildFontOptions(2))
@@ -1390,8 +1363,6 @@ if valves is not None:
                 print(subMenuText, thisSensor, whiteSpace, sym, buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, ' param1=request param2=', currentValveURL, \
                       ' param3=', smartAppSecret, valve_param4, ' terminal=false refresh=false')
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + sym
             indent = ""
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 print(subMenuText + "-- 🎯 Event History", buildFontOptions(3))
@@ -1430,8 +1401,6 @@ if waters is not None:
                 if not subMenuCompact: print("-- " + menuTitle + " (" + str(countSensors - mainMenuMaxItems) + ")")
                 subMenuText = "--"
             print(subMenuText, sensor['name'], whiteSpace, sym, buildFontOptions(3), colorText)
-            if favoriteDevicesBool and sensor['name'] in favoriteDevices:
-                favoriteDevicesOutputDict[sensor['name']] = sensor['name'] + whiteSpace + " " + sym
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog'] if d['name'] in 'water'], subMenuText, "")
             if sensor['battery'] != 'N/A':
@@ -1444,38 +1413,6 @@ if waters is not None:
 stop = timeit.default_timer()
 hortSeparatorBar()
 td = datetime.now().strftime('%a %b %d, %I:%M:%S %p').replace(' AM', 'am').replace(' PM', 'pm')
-
 print (":crystal_ball: Hubitat → Xbar on {}{}".format(td,buildFontOptions(2)))
-if (options['debugBool']):
-    print ("--• GUI Options {}".format(buildFontOptions()))
-    print ("----Plugin: {} {}".format(scriptFile,buildFontOptions()))
-    printFormatString = "----{:" + len(max(options, key=len)).__str__() + "} = {} {}"
-    for option in sorted(options):
-        if options[option] is not None and option == 'favoriteDevices' and len(favoriteDevices) > 1:
-            for i, v in enumerate(options[option]):
-                print (printFormatString.format(option + "(" + str(i + 1) + ")", v, buildFontOptions(3)))
-        else:
-            print (printFormatString.format(
-                option, options[option] if options[option] is not None else "{Default Set in GUI}", buildFontOptions(3)
-            ))
 print ("--Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
 print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions())
-
-
-if favoriteDevicesBool:
-    # noinspection PyUnboundLocalVariable
-    sys.stdout = original_stdout
-    # noinspection PyUnboundLocalVariable
-    fo.seek(0, 0)
-    countSensors = len(favoriteDevices)
-    mainTitle = "My Favorite Devices"
-    if showSensorCount: mainTitle += " (" + str(countSensors) + ")"
-    for key in favoriteDevices:
-        # noinspection PyBroadException
-        try:
-            print (":small_blue_diamond: " + favoriteDevicesOutputDict[key] + ' | color=black font=Monaco  size=11')
-        except:
-            continue
-    print ('---')
-    print (fo.read())
-    fo.close()
