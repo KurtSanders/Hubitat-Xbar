@@ -666,7 +666,7 @@ def getStatus() {
                        "batteryWarningPctEmoji"		: batteryWarningPctEmoji,
                        "hsmDisplayBool"				: hsmDisplayBool,
                        "eventsTimeFormat"			: eventsTimeFormat,
-                       "favoriteDevices"			: favoriteDevices,
+//                       "favoriteDevices"			: favoriteDevices,
                        "eventsShow"					: eventsShow,
                        "colorChoices"				: colorChoices ? colorChoices : [
                            "Soft White","White","Daylight","Warm White","Red","Green","Blue","Yellow","Orange","Purple","Pink","Cyan"
@@ -930,14 +930,16 @@ def devicesManagementPage() {
         section('Main Menu Bar Icons (Required)') {
             href name: "devicesTopMenuBarPageLink", title: "Select icons for the Main Menu Bar", required: true, description: "", page: "devicesTopMenuBarPage"
         }
-        section("Favorite Sensors (Mix & Match) to display in separate 1st category section on subMenu") {
-            paragraph "The 'Favorite' sensors submenu is a section on the BitBar submenu to locate a few sensors that you wish to display/monitor quickly.  You cannot control them from this menu, just display."
-            input "favoriteDevices", "enum",
-                title: "Favorite sensors (Optional)",
-                options: getAllDevices(),
-                required: false,
-                multiple: true
-        }
+/*
+section("Favorite Sensors (Mix & Match) to display in separate 1st category section on subMenu") {
+paragraph "The 'Favorite' sensors submenu is a section on the BitBar submenu to locate a few sensors that you wish to display/monitor quickly.  You cannot control them from this menu, just display."
+input "favoriteDevices", "enum",
+title: "Favorite sensors (Optional)",
+options: getAllDevices(),
+required: false,
+multiple: true
+}
+*/
     }
 }
 
