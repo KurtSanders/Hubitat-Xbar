@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-// Major XBar Version requires a change to the Python3 Version, Minor XBar Version numbering will still be compatible with lower minor Python versions
+// Major XBar version re-write required a change to the Python3 script and groovy code.
 import groovy.json.JsonSlurper
 import java.util.ArrayList;
 import groovy.time.*
@@ -21,12 +21,13 @@ import groovy.time.*
 definition(
     name: "Hubitat → XBar Plugin",
     namespace: "kurtsanders",
-    author: "kurtsanders",
-    description: "Display and control Hubitat device information in the top macOS Menu Bar application using Xbar",
-    category: "My Apps",
-    iconUrl:    "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/master/Images/Hubitat-Xbar.png",
-    iconX2Url:  "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/master/Images/Hubitat-Xbar.png",
-    iconX3Url:  "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/master/Images/Hubitat-Xbar-120.png")
+    author: "Kurt Sanders kurt@kurtsanders.com",
+    description: "Display and control Hubitat device information in the  MenuBar application using Xbar",
+    documentationLink: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
+    category: "Convenience",
+    iconUrl: "",
+    iconX2Url: ""
+)
 
 preferences {
   page(name:"mainPage")
@@ -555,16 +556,33 @@ def getMainDisplayData() {
     def returnCapability
     def returnName
     def returnValue
+    def returnColor
     def returnEmoji
     def fieldName
     def fieldValue
     def resp = []
-
+    def emojiDict = [
+        "armedAway"  : ['emoji':"👀", 'color':'red'],
+        "armedHome"  : ['emoji':"🏡", 'color':'red'],
+        "armedNight" : ['emoji':"💤", 'color':'red'],
+        "disarmed"   : ['emoji':"✅", 'color':'green'],
+        "locked"     : ['emoji':"🔒", 'color':'green'],
+        "unlocked"   : ['emoji':"🔓", 'color':'red'],
+        "closed"     : ['emoji':"📕", 'color':'green'],
+        "open"       : ['emoji':"📖", 'color':'red'],
+        "off"        : ['emoji':"🟢", 'color':'green'],
+        "on"         : ['emoji':"🔴", 'color':'red'],
+    ]
     if (displaySensorShowName) {
-        resp << [name: "hsm", label: "HSM Status", value: location.hsmStatus, capability: "hsm", emoji: ":ok:"];
+        resp << [name       : "hsm",
+                 label      : "HSM Status",
+                 value      : location.hsmStatus,
+                 capability : "hsm",
+                 emoji      : emojiDict.get(location.hsmStatus)['emoji']?:"❓",
+                 color      : emojiDict.get(location.hsmStatus)['color']?:"black"];
     }
     if (displaySensorCapabilitySize == 0) {
-        resp << [name: 'N/A', label: 'N/A', value: 'N/A', capability: 'N/A', emoji: 'unknown'];
+        resp << [name: 'N/A', label: 'N/A', value: 'N/A', capability: 'N/A', emoji: ':heavy_exclamation_mark:'];
     } else {
         for(int i = 0;i<displaySensorCapabilitySize;i++) {
             fieldName = "displaySensor${i}"
@@ -575,25 +593,24 @@ def getMainDisplayData() {
                 returnName = fieldValue.displayName
                 returnCapability = displaySensorCapability[i]
                 returnValue = fieldValue.currentValue(displaySensorCapability[i].replaceAll(/Measurement$|Sensor$/,''))
-                // if (debugBool) log.debug "${i}-> returnValue = ${returnValue}"
-
-                switch (returnValue) {
-                    case ~/[0-9]*\.?[0-9]+/:
-                    returnEmoji = 'number'
-                    break
-                    case 'on':
-                    case 'off':
-                    case 'open':
-                    case 'closed':
-                    case 'locked':
-                    case 'unlocked':
-                    returnEmoji = returnValue
-                    break
-                    default:
-                        returnEmoji = 'unknown'
-                    break
+                if (debugBool) log.debug "${i}-> returnValue = ${returnValue}"
+                if(emojiDict.containsKey(returnValue)) {
+                    if (debugBool) log.debug "==> emoji = ${emojiDict.get(returnValue)['emoji']?: returnValue}"
+                    if (debugBool) log.debug "==> color = ${emojiDict.get(returnValue)['color']?: returnValue}"
+                    returnEmoji = emojiDict.get(returnValue)['emoji']?:"❓"
+                    returnColor = emojiDict.get(returnValue)['color']?:"black"
+                } else {
+                    returnColor = "black"
+                    returnEmoji = "🔹"
                 }
-                resp << [name: returnName, label: fieldValue.displayName, 'value' : returnValue, capability: returnCapability, emoji: returnEmoji];
+                resp << [name       : returnName,
+                         label      : fieldValue.displayName,
+                         value      : returnValue,
+                         capability : returnCapability,
+                         emoji      : returnEmoji,
+                         color      : returnColor
+                        ];
+                if (debugBool) log.debug "resp = ${resp}"
             }
         }
     }
@@ -605,6 +622,7 @@ def getStatus() {
     def lastUpdateTime = new Date().format("EEE, MMM d, h:mm a", location.timeZone)
     log.info "${app.name} getStatus() started at ${timeStamp} by ${params.nodename}"
     state.path = params.path
+    state.pythonVersion = params.pythonVersion
     if (params.text != null) {
         log.debug "API test was successfull"
         return
@@ -666,7 +684,6 @@ def getStatus() {
                        "batteryWarningPctEmoji"		: batteryWarningPctEmoji,
                        "hsmDisplayBool"				: hsmDisplayBool,
                        "eventsTimeFormat"			: eventsTimeFormat,
-//                       "favoriteDevices"			: favoriteDevices,
                        "eventsShow"					: eventsShow,
                        "colorChoices"				: colorChoices ? colorChoices : [
                            "Soft White","White","Daylight","Warm White","Red","Green","Blue","Yellow","Orange","Purple","Pink","Cyan"
@@ -713,16 +730,7 @@ private mainPage() {
     def currentYear = new Date().format("yyyy", location.timeZone)
     dynamicPage(name: "mainPage", uninstall:true, install:true, submitOnChange: true) {
         def apiSetupState = (state.accessToken==null)?'Please complete API setup!':'API Setup is complete!'
-        section(hideable: true, hidden: true, "View Online Documentation for ${app.name}") {
-            href(name: "hrefNotRequiredhere",
-                 title: "${app.name} Documentation",
-                 required: false,
-                 image: "https://github.com/KurtSanders/Hubitat-Xbar/blob/main/Images/Help-Logo.png?raw=true",
-                 style: "external",
-                 url: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
-                 description: "Tap here to view the online documentation for ${app.name}"
-                )
-        }
+        help()
         section( "API Access Setup" ) {
             app.updateSetting("testAPI", false)
             app.updateSetting("okSend", false)
@@ -731,9 +739,9 @@ private mainPage() {
             href name: "APIPageLink", title: "${apiSetupState}", description: (state.endpoint == null)?"You must add this API Oauth string to ${app.name}":"", page: "APIPage"
         }
         section("Sensor/Device Management & Setup") {
-            href name: "devicesManagementPageLink", title: "Select sensors/devices", description: "", page: "devicesManagementPage"
+            href name: "devicesManagementPageLink", title: "Select sensors/devices and  MenuBar configuration", description: "", page: "devicesManagementPage"
         }
-        section("Mac Menu Bar & SubMenu Display Options") {
+        section(" MenuBar & SubMenu Display Options") {
             href name: "optionsPageLink", title: "Select display options", description: "", page: "optionsPage"
         }
         section(hideable: true, hidden: true, "Set a Custom Application Name") {
@@ -768,7 +776,9 @@ private mainPage() {
         section {
             section() {
                 paragraph("${xBarLogo}" +
-                          "<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D4PYWK33KARSS&source=url'>Please consider donating to this application via PayPal™.</a><br>" +
+                          "Hubitat → Xbar Plugin\n" +
+                          "Version: HE Groovy: ${version()},  Python3 Script: ${state.pythonVersion}\n" +
+                          "<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D4PYWK33KARSS&source=url'>Donations to support this application graciously welcomed via PayPal™.</a><br>" +
                           "<small><i>Copyright \u00a9 2018-${currentYear} SandersSoft™ Inc - All rights reserved.</i></small><br>")
             }
         }
@@ -777,16 +787,7 @@ private mainPage() {
 
 def APIPage() {
     dynamicPage(name: "APIPage") {
-        section(hideable: true, hidden: true, "View Online Documentation for ${app.name}") {
-            href(name: "hrefNotRequiredhere",
-                 title: "${app.name} Documentation",
-                 required: false,
-                 image: "https://github.com/KurtSanders/Hubitat-Xbar/blob/main/Images/Help-Logo.png?raw=true",
-                 style: "external",
-                 url: "https://github.com/KurtSanders/Hubitat-Xbar#readme",
-                 description: "Tap here to view the online documentation for ${app.name}"
-                )
-        }
+        help()
         section("API OAuth Setup") {
             if (!state.accessToken) {
                 paragraph "<p style='color:red'>Required: The Xbar API OAuth token has not been setup. Tap below to enable it.</p>"
@@ -925,52 +926,42 @@ def devicesManagementPage() {
     dynamicPage(name:"devicesManagementPage") {
 
         section("Sensors & Devices (Required)") {
-            href name: "devicesPageLink", title: "Select the sensors to display/control", required: true, description: "", page: "devicesPage"
+            href name: "devicesPageLink", title: "Select the sensors/devices to display/control", required: true, description: "", page: "devicesPage"
         }
-        section('Main Menu Bar Icons (Required)') {
-            href name: "devicesTopMenuBarPageLink", title: "Select icons for the Main Menu Bar", required: true, description: "", page: "devicesTopMenuBarPage"
+        section(' MenuBar Icons (Required)') {
+            href name: "devicesTopMenuBarPageLink", title: "Select icons for the  MenuBar", required: true, description: "", page: "devicesTopMenuBarPage"
         }
-/*
-section("Favorite Sensors (Mix & Match) to display in separate 1st category section on subMenu") {
-paragraph "The 'Favorite' sensors submenu is a section on the BitBar submenu to locate a few sensors that you wish to display/monitor quickly.  You cannot control them from this menu, just display."
-input "favoriteDevices", "enum",
-title: "Favorite sensors (Optional)",
-options: getAllDevices(),
-required: false,
-multiple: true
-}
-*/
     }
 }
 
 def devicesTopMenuBarPage() {
     dynamicPage(name:"devicesTopMenuBarPage") {
-        section("MacOS Main Menu BitBar: Select one device to display a status.") {
-            paragraph "The MacOS Main Menu Bar runs along the top of the screen on your Mac"
+        section("MacOS XBar Display: Select up to 4 devices to display a status.") {
+            paragraph "The  MenuBar runs along the top of the screen."
             input name: "displaySensorCapability", type: "enum",
-                title: "Mac Menu Bar: Select up to 4 Sensor Capabilities for the Menu Bar Icons",
+                title: " MenuBar: Select up to 4 Sensor Capabilities for the  MenuBar Icons",
                 options: ['contactSensor':'Contact','lock':'Lock','switch':'Switch','temperatureMeasurement':'Temperature Measurement'],
                 multiple: true,
                 submitOnChange: true,
-                required: false
+                required: true
             if (displaySensorCapability) {
                 def displaySensorCapabilitySize = displaySensorCapability.size()
                 if (displaySensorCapabilitySize>1) {
-                    paragraph "The ${displaySensorCapabilitySize} device status icons will cycle every few seconds in the MacOS Main Menu Bar"
+                    paragraph "The ${displaySensorCapabilitySize} device status icons will cycle every few seconds in the  MenuBar"
                 }
                 for(int i = 0;i<displaySensorCapabilitySize;i++) {
                     input "displaySensor${i}", "capability.${displaySensorCapability[i]}",
-                        title: "Select the one ${displaySensorCapability[i].replaceAll(/Measurement$|Sensor$/,'').toUpperCase()} sensor to place in the Mac Main Menu Bar",
+                        title: "Select the ${displaySensorCapability[i].replaceAll(/Measurement$|Sensor$/,'').toUpperCase()} sensor(s) to place in the  MenuBar",
                         multiple: false,
                         submitOnChange: true,
                         required: true
                 }
             }
         }
-        section("Display Hubitat Safety Monitor in Main Menu Bar") {
+        section("Display Hubitat Safety Monitor (HPM) in  MenuBar") {
             def displaySensorCapabilityMessage = displaySensorCapability?"along with the ${displaySensorCapability.size()} sensor(s) selected above":''
             input "displaySensorShowName", "bool",
-                title: "Add the Hubitat Safety Monitor status icon to the Main Menu Bar ${displaySensorCapabilityMessage}",
+                title: "Add a Hubitat Safety Monitor (HPM) status icon to the  MenuBar ${displaySensorCapabilityMessage}",
                 submitOnChange: true,
                 default: false,
                 required: true
@@ -982,7 +973,7 @@ def devicesTopMenuBarPage() {
 def devicesPage() {
     dynamicPage(name:"devicesPage") {
         section ("Choose the sensor devices to be displayed & controlled in the ${app.name} menu") {
-            paragraph "Select devices that you want to be displayed below the top MacOS Main Menu Bar (in the Xbar Sub-menu)."
+            paragraph "Select devices that you want to be displayed below the top  MenuBar (in the Xbar Sub-menu)."
             input "contacts", "capability.contactSensor",
                 title: "Which Contact Sensors?",
                 multiple: true,
@@ -1096,15 +1087,15 @@ def iconsPage() {
 
 def fontsPage() {
     dynamicPage(name:"fontsPage", hideWhenEmpty: true) {
-        section("Optional Main Menu: DISPLAY FONTS, COLORS & SEPARATOR BARS: Mac Font Name for Display (warning: The Font Name MUST exist on the Mac.  Leave blank for 'Arial'") {
+        section("Optional Main Menu: DISPLAY FONTS, COLORS & SEPARATOR BARS:  Font Name for Display (warning: The Font Name MUST exist on the  Computer.  Leave blank for 'Arial'") {
             input "mainFontName", "enum",
-                title: "Mac 'Main-Menu Bar' Font Name (default font is 'Arial' if field is left empty).  Color auto-changes based on Primary Thermostat Operation Mode (Heat/Cool) from/to Red/Blue",
+                title: " 'MenuBar' Font Name (default font is 'Arial' if field is left empty).  Color auto-changes based on Primary Thermostat Operation Mode (Heat/Cool) from/to Red/Blue",
                 default: "Arial",
                 options: fontChoiceList(),
                 multiple: false,
                 required: false
             input "mainFontSize", "number",
-                title: "Mac 'Main-Menu Bar' Font Pitch Size (default is '14').",
+                title: " 'MenuBar' Font Pitch Size (default is '14').",
                 default: 14,
                 required: false
         }
@@ -1487,9 +1478,15 @@ def colorChoiceList() {
             "lightslategray","darksalmon","crimson","sandybrown","lightpink","seashell"].sort()
 }
 
+def help() {
+    section(hideable: true, hidden: false, "${app.name} Online Documentation") {
+        paragraph "<a href='https://github.com/KurtSanders/Hubitat-Xbar#readme' target='_blank'><h4 style='color:DodgerBlue;'>Click this link to view Online Documentation for ${app.name}</h4></a>"
+    }
+}
+
 def supportedMusicPlayerDeviceCommands() {
     return ['nextTrack','pause','play','previousTrack','stop']
 }
-
+String version() {return "1.0.1"}
 String getxBarLogo(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Hubitat → Xbar Logo' height=60 align=left /><br>"}
 String getDoneImage(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/done.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Done!' height=60 align=left /><br>"}

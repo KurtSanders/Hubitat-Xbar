@@ -7,7 +7,7 @@
 # This executable Python3 file must be installed in the XBar Plugins application directory (~/Library/Application\ Support/xbar/plugins)
 #
 # <xbar.title>Hubitat → XBar for MacOS</xbar.title>
-# <xbar.version>v1.0</xbar.version>
+# <xbar.version>v1.0.1</xbar.version>
 # <xbar.author>Kurt Sanders</xbar.author>
 # <xbar.author.github>KurtSanders</xbar.author.github>
 # <xbar.desc>Provides a view and control of Hubitat sensors from the macOS menubar</xbar.desc>
@@ -44,6 +44,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from sys import exit
+
+scriptVersion = "1.0.1"
 
 start = timeit.default_timer()
 DEBUG = False
@@ -153,7 +155,6 @@ class myUtilities:
             }
         self.waitSecs=self.devices_dict.get(deviceType,1)
         return self.waitSecs
-
 
 # Define class for formatting numerical outputs
 # Define NumberFormatter class
@@ -281,7 +282,7 @@ def verifyInteger(intValue, errorIntValue):
         return errorIntValue
 
 # Set URLs
-f = dict(access_token=smartAppSecret,path=scriptFile,nodename=os.uname()[1])
+f = dict(access_token=smartAppSecret,path=scriptFile,nodename=os.uname()[1],pythonVersion=scriptVersion)
 statusURL = "{}{}{}".format(smartAppURL, "GetStatus/?", urllib.parse.urlencode(f))
 contactURL = smartAppURL + "ToggleSwitch/?access_token=" + smartAppSecret + "&id="
 valveURL = smartAppURL + "ToggleValve/?access_token=" + smartAppSecret + "&id="
@@ -605,12 +606,12 @@ if mainDisplay is not None:
             if isinstance(mainDisplay[x]['value'], int) or isinstance(mainDisplay[x]['value'], float):
                 formattedMainDisplay += formatter.formatNumber(mainDisplay[x]['value']) + degree_symbol
                 mainMenuColor = thermoColor
-                print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=14', mainMenuColor))
+                print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=12', mainMenuColor))
             elif mainDisplay[x]['emoji'] is not None:
-                print("{} | dropdown=false".format(mainDisplay[x]['emoji']))
+                print("{} | dropdown=false size=12".format(mainDisplay[x]['emoji']))
             else:
-                formattedMainDisplay = "HE XBar"
-                print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=14', mainMenuColor))
+                print("{} | {} dropdown=false size=12".format(mainDisplay[x]['value'], mainMenuColor))
+        
     if mainDisplaylen > 0:
         maxLengthDisplayName = 0
         print("---")
@@ -624,16 +625,10 @@ if mainDisplay is not None:
                 mainDisplay[x]['name'] = mainDisplay[x]['label']
             maxLengthDisplayName = len(mainDisplay[x]['name']) if len(mainDisplay[x]['name']) > maxLengthDisplayName else maxLengthDisplayName
         for x in range(len(mainDisplay)):
-            print("--:small_blue_diamond: {} {} {} ".format(mainDisplay[x]['name'].ljust(maxLengthDisplayName, '.'), str(mainDisplay[x]['value']).upper(), buildFontOptions(3)))
+            print("--{} {} {} {} ".format(mainDisplay[x]['emoji'],mainDisplay[x]['name'].ljust(maxLengthDisplayName, '.'), str(mainDisplay[x]['value']).title(), buildFontOptions(3)))
 else:
-    formattedMainDisplay = "HE Xbar"
-    print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=14', mainMenuColor))
-
-#if favoriteDevicesBool:
-#    original_stdout = sys.stdout
-#    favoriteDevicesOutputDict = {}
-#    fo = tempfile.TemporaryFile()
-#    sys.stdout = fo
+    formattedMainDisplay = "💠"
+    print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=12', mainMenuColor))
 
 # Set the static amount of decimal places based on setting
 if matchOutputNumberOfDecimals is True:
@@ -1413,6 +1408,7 @@ if waters is not None:
 stop = timeit.default_timer()
 hortSeparatorBar()
 td = datetime.now().strftime('%a %b %d, %I:%M:%S %p').replace(' AM', 'am').replace(' PM', 'pm')
-print (":crystal_ball: Hubitat → Xbar on {}{}".format(td,buildFontOptions(2)))
+print (":crystal_ball: Hubitat → Xbar Version: {} {}".format(scriptVersion,buildFontOptions(2)))
 print ("--Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
 print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions())
+print ("--:crystal_ball: Last Run Time: {} {}".format(td,buildFontOptions(2)))
