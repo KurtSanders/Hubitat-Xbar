@@ -686,7 +686,18 @@ def getStatus() {
                        "eventsTimeFormat"			: eventsTimeFormat,
                        "eventsShow"					: eventsShow,
                        "colorChoices"				: colorChoices ? colorChoices : [
-                           "Soft White","White","Daylight","Warm White","Red","Green","Blue","Yellow","Orange","Purple","Pink","Cyan"
+                           "Soft White",
+                           "White",
+                           "Daylight",
+                           "Warm White",
+                           "Red",
+                           "Green",
+                           "Blue",
+                           "Yellow",
+                           "Orange",
+                           "Purple",
+                           "Pink",
+                           "Cyan"
                        ],
                        "sortTemperatureAscending"	: (sortTemperatureAscending == null) ? false : sortTemperatureAscending
                       ]

@@ -93,19 +93,6 @@ def hubitatAPIRequest(url):
         notify("Xbar Error","HTTPS Error Encountered: Communicating to Hub API caused the following error: {}".format(str(err)))
         exit(1)
 
-# Check for a passed argument of 'request' from Xbar application
-if ((len(sys.argv)>1) and (sys.argv[1] == "request")):
-    hubitatAPIRequest(sys.argv[2])
-    if sys.argv[3].isdigit():
-        waittime = int(sys.argv[3])
-    else:
-        waittime = 3
-    notify("Xbar → Hubitat: {}".format(sys.argv[1].title()),"{}\nWaiting {} secs for XBar auto refresh status".format(sys.argv[4],waittime))
-    time.sleep(waittime)
-    notify("Xbar → Hubitat","XBar auto refresh started")
-    request = "xbar://app.xbarapp.com/refreshPlugin?path={}".format(os.path.basename(__file__))
-    subprocess.call(['open', request])
-        
 # Define class for useful functions
 class myUtilities:
 #    def __init__(self):
@@ -144,17 +131,33 @@ class myUtilities:
         return self.image
     def devWaitSecs(self,deviceType):
         self.devices_dict = {
-            "hsmState":5,
-            "locks":10,
-            "modes":5,
-            "musicplayers":5,
-            "switches":2,
-            "thermostats":10,
-            "valves":10,
-            "waters":10
+            "hsmState"     :5,
+            "locks"        :10,
+            "modes"        :5,
+            "musicplayers" :5,
+            "switches"     :2,
+            "lights"       :2,
+            "thermostats"  :10,
+            "valves"       :10,
+            "waters"       :10
             }
         self.waitSecs=self.devices_dict.get(deviceType,1)
         return self.waitSecs
+
+# Check for a passed argument of 'request' from Xbar application
+if ((len(sys.argv)>1) and (sys.argv[1] == "request")):
+    hubitatAPIRequest(sys.argv[2])
+    if sys.argv[3].isdigit():
+        waittime = int(sys.argv[3])
+    else:
+        utilities=myUtilities()
+        waittime=utilities.devWaitSecs(sys.argv[3])
+    notify("Xbar → Hubitat: {}".format(sys.argv[1].title()),"{}\nWaiting {} secs for XBar auto refresh status".format(sys.argv[4],waittime))
+    time.sleep(waittime)
+    notify("Xbar → Hubitat","XBar auto refresh started")
+    request = "xbar://app.xbarapp.com/refreshPlugin?path={}".format(os.path.basename(__file__))
+    subprocess.call(['open', request])
+        
 
 # Define class for formatting numerical outputs
 # Define NumberFormatter class
@@ -196,8 +199,8 @@ def TitleCase(var):
 
 colorHueList = {
         "Orange"    : 10,
-        "Warm white": 20,
-        "Soft white": 23,
+        "Warm White": 20,
+        "Soft White": 23,
         "Yellow"    : 25,
         "Green"     : 39,
         "white"     : 52,
@@ -681,7 +684,7 @@ if (thermostats is not None) and (len(thermostats) > 0):
                 if not subMenuCompact: print("----Set Mode to:", buildFontOptions(1))
                 for thermoMode in thermoModeList:
                     if thermoMode != thermostat['thermostatMode']:
-                        thermo_param4 = 'param4=\"Setting {} to {}\"'.format(thermostat['displayName'], thermoMode)
+                        thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], thermoMode)
                         print("----• {}".format(TitleCase(thermoMode)), buildFontOptions(3), \
                               "shell=" + callbackScript, " param1=request param2=" + thermoModeURL + thermoMode.lower(), \
                               " param3=Thermostat", thermo_param4, ' terminal=false refresh=false')
@@ -695,14 +698,14 @@ if (thermostats is not None) and (len(thermostats) > 0):
                     print("----Change Setpoint | ", smallFontPitchSize)
                     for c in range(currentCoolingSetPoint - 5, currentCoolingSetPoint):
                         id = currentCoolingSetPoint - c
-                        thermo_param4 = 'param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
+                        thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(c) + degree_symbol, buildFontOptions(3), \
                               "color="+numberToColorGrad(id, "blue"), \
                               "shell="+ callbackScript, " param1=request param2="+str(
                                 coolSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
                     print("----", ':heavy_check_mark:', str(currentCoolingSetPoint) + degree_symbol, "| color=black size=14 font='Menlo Bold'")
                     for c in range(currentCoolingSetPoint + 1, currentCoolingSetPoint + 6):
-                        thermo_param4 = 'param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
+                        thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(c) + degree_symbol, buildFontOptions(3), "color=gray", \
                               "shell="+ callbackScript, " param1=request param2="+str(
                                 coolSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
@@ -716,14 +719,14 @@ if (thermostats is not None) and (len(thermostats) > 0):
                     print("----Change Setpoint | ", smallFontPitchSize)
                     for c in range(currentHeatingSetPoint + 5, currentHeatingSetPoint, -1):
                         id = c - currentHeatingSetPoint
-                        thermo_param4 = 'param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
+                        thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(
                             c) + degree_symbol, buildFontOptions(3), "color="+numberToColorGrad(id, "red"), \
                               "shell=" + callbackScript, " param1=request param2=" + str(
                                 heatingSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
                     print("----", ':heavy_check_mark:', str(currentHeatingSetPoint) + degree_symbol, "| color=black size=14 font='Menlo Bold'")
                     for c in range(currentHeatingSetPoint - 1, currentHeatingSetPoint - 6, -1):
-                        thermo_param4 = 'param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
+                        thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(c) + degree_symbol, buildFontOptions(3), "color=gray", \
                               "shell=" + callbackScript, " param1=request param2=" + str(
                                 heatingSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
@@ -827,7 +830,7 @@ if (modes is not None) and len(modes) > 0:
         colorText = 'color=#333333' if colorSwitch else 'color=#666666'
         if mode['name'] not in currentmode['name']:
             currentModeURL = modeURL + urllib.parse.quote(mode['name'])
-            mode_param4 = 'param4=\"Setting House Mode to {}\"'.format(mode['name'])
+            mode_param4 = ' param4=\"Setting House Mode to {}\"'.format(mode['name'])
             print("--• " + mode[
                 'name'], buildFontOptions(3), colorText, ' shell=' + callbackScript, ' param1=request param2=' + currentModeURL, \
                   ' param3=mode', mode_param4, ' terminal=false refresh=false')
@@ -850,7 +853,7 @@ if hsmDisplayBool and hsmState is not None:
             else:
                 currenthsmURL = hsmURL + hsmCmd
                 currenthsmDisplay = ""
-                hsm_param4 = 'param4=\"Setting HSM to {}\"'.format(hsmCmd.title())
+                hsm_param4 = ' param4=\"Setting HSM to {}\"'.format(hsmCmd.title())
                 currenthsmURL = "shell=" + callbackScript + ' param1=request param2=' + currenthsmURL + ' param3=hsm ' + hsm_param4 + ' terminal=false refresh=false'
             print("--• {}{}".format(hsmCmd.title(), currenthsmDisplay), buildFontOptions(3), colorText, currenthsmURL)
             colorSwitch = not colorSwitch
@@ -1014,14 +1017,14 @@ if locks is not None:
             if sensor['value'] == 'locked':
                 sym = '🔒'
                 img = utilities.getImageString(sensor['value'])
-                lock_param4 = 'param4=\"{} {}\"'.format('Unlocking', sensor['name'])
+                lock_param4 = ' param4=\"{} {}\"'.format('Unlocking', sensor['name'])
                 if mainMenuAutoSizeDict[sensorName] is True:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Locked..."
             elif sensor['value'] == 'unlocked':
                 sym = '🔓'
                 img = utilities.getImageString(sensor['value'])
-                lock_param4 = 'param4=\"{} {}\"'.format('Locking', sensor['name'])
+                lock_param4 = ' param4=\"{} {}\"'.format('Locking', sensor['name'])
             else:
                 sym = '🔴'
                 img = utilities.getImageString(sensor['value'])
@@ -1037,11 +1040,11 @@ if locks is not None:
             if useImages is True:
                 print(subMenuText, sensor['name'] + ' is ' + sensor['value'].capitalize(), buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, ' param1=request param2=' + currentLockURL, \
-                      ' param3={}'.format(utilities.devWaitSecs("locks")), lock_param4, ' terminal=false refresh=false image=' + img)
+                      ' param3=locks ', lock_param4, ' terminal=false refresh=false image=' + img)
             else:
                 print(subMenuText, sensor['name'] + ' is ' + sensor[
                     'value'].capitalize(), whiteSpace, sym, buildFontOptions(3) + colorText + ' shell=' + callbackScript, \
-                      ' param1=request param2=' + currentLockURL, ' param3={}'.format(utilities.devWaitSecs("locks")), lock_param4, ' terminal=false refresh=false')
+                      ' param1=request param2=' + currentLockURL, ' param3=locks ', lock_param4, ' terminal=false refresh=false')
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate(
                     [d for d in sensor['eventlog'] if d['value'] in
@@ -1060,6 +1063,16 @@ if locks is not None:
 
 # Output Switches & Lights
 if switches is not None:
+    color2hexDict = {'Cyan' :'#00FFFF',
+                 'Red'      :'#FF0000',
+                 'Blue'     :'#0000FF',
+                 'Yellow'   :'#FFFF00',
+                 'Green'    :'#008000',
+                 'Purple'   :'#800080',
+                 'Orange'   :'#FFA500',
+                 'Pink'     :'#ffc0cb'
+                 }
+    
     sensorName = "Switches"
     countSensors = len(switches)
     if countSensors > 0:
@@ -1090,11 +1103,11 @@ if switches is not None:
             if sensor['value'] == 'on':
                 sym = " ✅"
                 img = utilities.getImageString('greenImage')
-                switch_param4 = 'param4=\"{} {}\"'.format('Turning Off', sensor['name'])
+                switch_param4 = ' param4=\"{} {}\"'.format('Turning Off', sensor['name'])
             else:
                 sym = " 🔴"
                 img = utilities.getImageString('redImage')
-                switch_param4 = 'param4=\"{} {}\"'.format('Turning On', sensor['name'])
+                switch_param4 = ' param4=\"{} {}\"'.format('Turning On', sensor['name'])
                 if mainMenuAutoSizeDict[sensorName] is True:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Switches Off..."
@@ -1108,11 +1121,11 @@ if switches is not None:
                 subMenuText = "--"
             if useImages is True:
                 print(subMenuText, thisSensor, buildFontOptions(3) + colorText + ' shell=' + callbackScript, \
-                      ' param1=request param2=' + currentSwitchURL, ' param3=' + smartAppSecret, switch_param4, ' terminal=false refresh=false image=' + img)
+                      ' param1=request param2=' + currentSwitchURL, ' param3=lights' , switch_param4, ' terminal=false refresh=false image=' + img)
             else:
                 print(subMenuText, thisSensor, whiteSpace, sym, buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, \
-                      ' param1=request param2=' + currentSwitchURL, ' param3=' + smartAppSecret, switch_param4, ' terminal=false refresh=false')
+                      ' param1=request param2=' + currentSwitchURL, ' param3=lights' , switch_param4, ' terminal=false refresh=false')
             indent = ""
             if sensor['isDimmer'] is True:
                 subMenuText = subMenuText + '--'
@@ -1126,13 +1139,13 @@ if switches is not None:
                     count += 1
                     print(subMenuText + "   • {:>4}".format(str(currentLevel) + "%"), buildFontOptions(4), \
                           'shell=' + callbackScript, ' param1=request param2=' + currentLevelURL, \
-                          ' param3=' + smartAppSecret, switch_param4, ' terminal=false refresh=false')
+                          ' param3=lights', switch_param4, ' terminal=false refresh=false')
                 if sensor['isRGB']:
                     subMenuText = subMenuText[:-4]
                 else:
                     subMenuText = subMenuText[:-2]
                 indent = '--'
-            if sensor['isRGB'] is True and colorChoices > 0:
+            if sensor['isRGB'] is True and len(colorChoices) > 0:
                 subMenuText = subMenuText + '--'
                 colorName = getColorNameHue(sensor["hue"])
                 if colorName is None: colorName = sensor["colorRGBName"]
@@ -1144,14 +1157,14 @@ if switches is not None:
                 for colorChoice in colorChoices:
                     if colorName == colorChoice: continue
                     count += 1
-                    if colorChoice == 'white':
+                    if colorChoice in ['White',"Soft White","Daylight","Warm White"]:
                         colorChoiceSafe = 'black'
                     else:
-                        colorChoiceSafe = colorChoice.split(' ', 1)[0]
+                        colorChoiceSafe = color2hexDict.get(colorChoice,"black")
                     currentColorURL = colorURL + sensor['id'] + '&colorName=' + urllib.parse.quote(colorChoice)
                     print(subMenuText + "{:>3}. {} ".format(count, getHueLevel(colorChoice)), buildFontOptions(4), \
-                          'shell=' + callbackScript, ' param1=request param2=' + currentColorURL, ' param3=' + smartAppSecret, \
-                          switch_param4, ' terminal=false refresh=false', 'color=' + colorChoiceSafe)
+                          'shell=' + callbackScript, ' param1=request param2=' + currentColorURL, ' param3=lights', \
+                          switch_param4, ' terminal=false refresh=false', ' color=' + colorChoiceSafe)
                 subMenuText = subMenuText[:-2]
                 print(subMenuText + colorBulbEmoji + ' Current Sat Value ({}) '.format(sensor["saturation"]), \
                       buildFontOptions(3), smallFontPitchSize)
@@ -1162,7 +1175,7 @@ if switches is not None:
                     currentColorURL = colorURL + sensor['id'] + '&saturation=' + str(currentLevel)
                     count += 1
                     print(subMenuText + "{:>3}. {:>4}".format(count, str(currentLevel)), buildFontOptions(4), \
-                          'shell=' + callbackScript, ' param1=request param2=' + currentColorURL, ' param3=' + smartAppSecret, \
+                          'shell=' + callbackScript, ' param1=request param2=' + currentColorURL, ' param3=lights', \
                           switch_param4, ' terminal=false refresh=false')
                 subMenuText = subMenuText[:-4]
                 indent = '--'
@@ -1170,7 +1183,7 @@ if switches is not None:
                 print(subMenuText + "-- 🎯 Event History", buildFontOptions(3))
                 eventGroupByDate(sensor['eventlog'], subMenuText + indent, "")
             colorSwitch = not colorSwitch
-
+exit(0)
 # Output Media Players
 if musicplayers is not None:
     sensorName = "MusicPlayers"
@@ -1227,23 +1240,23 @@ if musicplayers is not None:
                     musicplayers_param4 = ' param4=\"{} {}\"'.format('Changing volume to', currentLevel)
                     print("{}----• {}".format(subMenuText, currentLevel), buildFontOptions(3), \
                           'shell=' + callbackScript, 'param1=request param2=' + currentMusicPlayerURL, \
-                          ' param3=' + smartAppSecret, musicplayers_param4, ' terminal=false refresh=false')
+                          ' param3=music', musicplayers_param4, ' terminal=false refresh=false')
                     currentLevel += 5
             if sensor['mute'] is not None:
                 for command in ["mute", "unmute"]:
-                    musicplayers_param4 = 'param4=\"{} {}\"'.format('MediaPlayer:', TitleCase(command))
+                    musicplayers_param4 = ' param4=\"{} {}\"'.format('MediaPlayer:', TitleCase(command))
                     if sensor['mute'].startswith(command):
                         muteState = " :white_check_mark: "
                     else:
                         muteState = '• '
                     print("{}--{}{}".format(subMenuText, muteState, TitleCase(command)), buildFontOptions(3), 'shell=' + callbackScript, \
-                          'param1=request param2=' + musicplayerURL + sensor['id'] + '&command=' + command, ' param3=' + smartAppSecret, musicplayers_param4, 'terminal=false refresh=false')
+                          'param1=request param2=' + musicplayerURL + sensor['id'] + '&command=' + command, ' param3=music', musicplayers_param4, 'terminal=false refresh=false')
             if sensor['supportedCommands'] is not None:
                 for supportedCommand in sorted(sensor['supportedCommands']):
-                    musicplayers_param4 = 'param4=\"{} {}\"'.format('MusicPlayer:', TitleCase(supportedCommand))
+                    musicplayers_param4 = ' param4=\"{} {}\"'.format('MusicPlayer:', TitleCase(supportedCommand))
                     print("{}--• {}".format(subMenuText, TitleCase(supportedCommand)), buildFontOptions(3), 'shell=' + callbackScript, \
                           'param1=request param2=' + musicplayerURL + sensor['id'] + '&command=' + supportedCommand, \
-                          ' param3=' + smartAppSecret, musicplayers_param4, 'terminal=false refresh=false')
+                          ' param3=music', musicplayers_param4, 'terminal=false refresh=false')
             if sensor["audioTrackData"] not in [None, '{}', '']:
                 albumArtworkImageLink = ''
                 albumArtwortkBullet = ''
@@ -1295,7 +1308,7 @@ if musicplayers is not None:
                     musicplayers_param4 = ' param4=\"Playing {}\"'.format(preset['name'].replace('"', '\\"').replace("'", ''))
                     print("{}----• {:2d}. {}".format(subMenuText, num, preset['name']), buildFontOptions(3), \
                           'shell=' + callbackScript, 'param1=request param2=' + currentMusicPlayerURL, \
-                          ' param3=' + smartAppSecret, musicplayers_param4, ' terminal=false refresh=false length=40')
+                          ' param3=music', musicplayers_param4, ' terminal=false refresh=false length=40')
             if sensor['alexaPlaylists']:
                 print("{}--• {} Favorite Playlists".format(subMenuText, sensor['manufacturer']), buildFontOptions(3))
                 print("{}----Favorite Playlists (Voice Cmd Only)".format(subMenuText), buildFontOptions(3), smallFontPitchSize)
@@ -1308,7 +1321,7 @@ if musicplayers is not None:
                         # musicplayers_param4 = ' param4=\"Playing {}\"'.format(alexaPlaylistObj.group(1).replace('"', '\\"').replace("'", ''))
                         # print "{}----• {}".format(subMenuText, alexaPlaylistObj.group(1)), buildFontOptions(3), \
                         #     'shell=' + callbackScript, 'param1=request param2=' + currentMusicPlayerURL, \
-                        #     ' param3=' + smartAppSecret, musicplayers_param4, ' terminal=false refresh=false length=40'
+                        #     ' param3=music', musicplayers_param4, ' terminal=false refresh=false length=40'
             colorSwitch = not colorSwitch
 
 # Output Valves
@@ -1335,11 +1348,11 @@ if valves is not None:
             if sensor['value'] == 'open':
                 sym = " ✅"
                 img = utilities.getImageString('greenImage')
-                valve_param4 = 'param4=\"{} {}\"'.format('Closing valve', sensor['name'])
+                valve_param4 = ' param4=\"{} {}\"'.format('Closing valve', sensor['name'])
             else:
                 sym = " 🔴"
                 img = utilities.getImageString('redImage')
-                valve_param4 = 'param4=\"{} {}\"'.format('Opening valve', sensor['name'])
+                valve_param4 = ' param4=\"{} {}\"'.format('Opening valve', sensor['name'])
                 if mainMenuAutoSizeDict[sensorName] is True:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Valves Close..."
@@ -1353,11 +1366,11 @@ if valves is not None:
                 subMenuText = "--"
             if useImages is True:
                 print(subMenuText, thisSensor, buildFontOptions(3) + colorText + ' shell=' + callbackScript, \
-                      ' param1=request param2=', currentValveURL, ' param3=', smartAppSecret, valve_param4, ' terminal=false refresh=false image=', img)
+                      ' param1=request param2=', currentValveURL, ' param3=valves', valve_param4, ' terminal=false refresh=false image=', img)
             else:
                 print(subMenuText, thisSensor, whiteSpace, sym, buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, ' param1=request param2=', currentValveURL, \
-                      ' param3=', smartAppSecret, valve_param4, ' terminal=false refresh=false')
+                      ' param3=valves', valve_param4, ' terminal=false refresh=false')
             indent = ""
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 print(subMenuText + "-- 🎯 Event History", buildFontOptions(3))
