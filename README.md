@@ -1,6 +1,6 @@
 ## Hubitat → Xbar (For Use with Hubitat Elevation® & Apple®![macOS logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
 -- 
-### Version 1.0.1 (Beta Release) 
+### Version 1.0.2 (Beta Release) 
 
 ![Hubitat → Xbar App-V2 logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar-Macbook-Pro.png)
 
@@ -8,11 +8,11 @@
 
 ### Features:
 
-* Designed only for use with [Xbar](https://xbarapp.com/dl), Hubitat Elevation® and Apple®  MacOS
+* Designed only for use with [Xbar](https://xbarapp.com/dl), Hubitat Elevation®, Apple®  MacOS and Python3.
 * Quickly view and control various Hubitat®: 
    * Devices & Sensors
    * Hub Modes 
-   * Safety Monitor (HSM)
+   * Hubitat Safety Monitor (HSM)
 
 ### Overview:
 Monitor and control [Hubitat™](https://hubitat.com/) devices, sensors, Hubitat® Safety Monitor, Modes from the Apple MacOS Menu Bar.  This application is controlled via the Hubitat user app named **'Hubitat → XBar App'**.  A Python3 script file is installed locally on the Apple Mac in the Xbar's Application plugin folder (~/Library/Application\ Support/xbar/plugins) and configured with your Hubitat OAuth application string.
@@ -24,12 +24,16 @@ One can click on any controllable Hubitat device, mode or routine in the Mac's H
 Sensor battery levels can be displayed for devices that have a battery capability by depressing the Apple {option + R} keys as the Hubitat → Xbar menu is activated {being displayed}.
 
 ## Prerequisites 
-*  Apple macOS 13.x with Python 3.x
+* [Apple Mac](https://www.apple.com/mac/)  
+	* macOS 13.x+ ([Ventura](https://www.apple.com/macos/ventura/) is recommended)
+	* [Python 3.11+ Freeware](https://www.python.org/downloads/macos/) 
+	* Use of  Apple Terminal App (/System/Applications/Utilities/Terminal.app)
+	* [Knowledge of installing and configuring software on macOS](https://www.google.com/search?q=how+to+install+software+on+mac&rlz=1C5CHFA_enUS503US503&oq=how+to+install+softwate&aqs=chrome.2.69i57j0l5.9308j0j4&sourceid=chrome&ie=UTF-8)
 * [XBar](https://xbarapp.com/dl) (Freeware)
-* [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html)
-* Use of  Apple Terminal App (/System/Applications/Utilities/Terminal.app)
-* [Knowledge of installing and configuring software on macOS](https://www.google.com/search?q=how+to+install+software+on+mac&rlz=1C5CHFA_enUS503US503&oq=how+to+install+softwate&aqs=chrome.2.69i57j0l5.9308j0j4&sourceid=chrome&ie=UTF-8)
-* Member of the [Hubitat Community](https://community.hubitat.com/) for support and new release information.
+* [Hubitat Elevation Hub](https://hubitat.com/)
+	* Knowledge of adding/configuring Hubitat User Apps  
+	* Use of [Hubitat Package Manager](https://hubitatpackagemanager.hubitatcommunity.com/installing.html) to install/update user apps
+	* Member of the [Hubitat Community](https://community.hubitat.com/) for support and new release information.
 
 
 ## Installation
@@ -79,6 +83,21 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	* The xbar Apple menubar screen display can be refreshed manually by clicking on the xbar logo or displayed sensor icon/value in the Apple menubar, and pressing (⌘-R).
 	* Hubitat© sensors/devices which can be instructed to change their state, Hub mode and HPM states can be highlighted and clicked in the Xbar's screen display to change their state.  Xbar will automatically refresh the display screen after a few seconds to reflect the new selected sensor states.  
 	* Some Hubitat© sensors/devices may not display a state accurately if they are slow to reflect their state change on the Hubitat© hub.  These sluggish sensors/devices will eventually reflect their correct state in the Xbar display when they are eventually updated on the Hubitat© hub. 
+
+## Hubitat → MenuBar Emoji Icon Mapping
+
+* Hubitat Safety Monitor
+	* "armedAway"  : ['emoji':"👀", 'color':'red']
+	* "armedHome"  : ['emoji':"🏡", 'color':'red']
+	* "armedNight" : ['emoji':"💤", 'color':'red']
+	* "disarmed"   : ['emoji':"✅", 'color':'green']
+* Devices/Sensors
+	* "locked"     : ['emoji':"🔒", 'color':'green']
+	* "unlocked"   : ['emoji':"🔓", 'color':'red']
+	* "closed"     : ['emoji':"📕", 'color':'green']
+	* "open"       : ['emoji':"📖", 'color':'red']
+	* "off"        : ['emoji':"🟢", 'color':'green']
+	* "on"         : ['emoji':"🔴", 'color':'red']
 
 ## Issues / Limitations 
 1. The Hubitat → Xbar  App is capable of cycling through multiple status bar items.  However, this Hubitat → Xbar  Plugin is designed to only display a ** temperature sensor, contact sensor, lock status, or switch sensor** at the top with the rest of the sensors displayed in the dropdown. 
