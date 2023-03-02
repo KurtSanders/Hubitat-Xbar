@@ -17,6 +17,7 @@
 import groovy.json.JsonSlurper
 import java.util.ArrayList;
 import groovy.time.*
+String version() {return "1.0.2"}
 
 definition(
     name: "Hubitat → XBar Plugin",
@@ -137,11 +138,11 @@ def updated() {
         log.info "Info logging messages has been activated for the next 30 minutes."
         runIn(1800,infoOff)
     }
-    if (debugBool) runIn(1800,debugOff) {
-        log.info "Debug logging messages has been activated for the next 30 minutes."
+    if (debugBool) runIn(600,debugOff) {
+        log.info "Debug logging messages has been activated for the next 10 minutes."
     }
-    if (debugDevices) runIn(1800,debugDevicesOff){
-        log.info "Debug Devices logging messages has been activated for the next 30 minutes."
+    if (debugDevices) runIn(600,debugDevicesOff){
+        log.info "Debug Devices logging messages has been activated for the next 10 minutes."
     }
 	initialize()
 }
@@ -620,11 +621,15 @@ def getMainDisplayData() {
 def getStatus() {
     def timeStamp = new Date().format("h:mm:ss a", location.timeZone);
     def lastUpdateTime = new Date().format("EEE, MMM d, h:mm a", location.timeZone)
-    log.info "${app.name} getStatus() started at ${timeStamp} by ${params.nodename}"
-    state.path = params.path
+    log.info "The Hubitat → Xbar Plugin 'getStatus()' function called at ${timeStamp} by ${params?.nodename}"
     state.pythonVersion = params.pythonVersion
+    state.scriptPath = params.scriptPath.replaceFirst('.$','')
+    state.scriptFilename = params.scriptFilename
+    if (debugBool) log.debug "state.scriptPath=${state?.scriptPath}"
+    if (debugBool) log.debug "state.scriptFilename=${state?.scriptFilename}"
+    if (debugBool) log.debug "state.pythonVersion = ${state?.pythonVersion}"
     if (params.text != null) {
-        log.debug "API test was successfull"
+        log.info "API test was successfull"
         return
     }
     def newLabel = "${app.name}<span style='color:green;'> <font size='-1'>(Polled by ${params.nodename}@ ${lastUpdateTime.replace("AM", "am").replace("PM","pm")})</font></span>"
@@ -701,23 +706,24 @@ def getStatus() {
                        ],
                        "sortTemperatureAscending"	: (sortTemperatureAscending == null) ? false : sortTemperatureAscending
                       ]
-    def resp = ["hsmState" : location.hsmStatus,
-                "hubName"    : location.hub.name,
-                "Temp Sensors" : tempData,
+    def resp = ["hsmState"        : location?.hsmStatus,
+                "hubName"         : location.hub.name,
+                "Temp Sensors"    : tempData,
                 "Contact Sensors" : contactData,
-                "Presence Sensors" : presenceData,
-                "Motion Sensors" : motionData,
-                "Switches" : switchData,
-                "Locks" : lockData,
-                "Music Players" : musicData,
-                "Thermostats" : thermoData,
-                "Modes" : modesDisplayBool?location.modes:null,
-                "CurrentMode" : modesDisplayBool?["name":location.mode]:null,
-                "MainDisplay" : mainDisplay,
+                "Presence Sensors": presenceData,
+                "Motion Sensors"  : motionData,
+                "Switches"        : switchData,
+                "Locks"           : lockData,
+                "Music Players"   : musicData,
+                "Thermostats"     : thermoData,
+                "Modes"           : modesDisplayBool?location.modes:null,
+                "CurrentMode"     : modesDisplayBool?["name":location.mode]:null,
+                "MainDisplay"     : mainDisplay,
                 "RelativeHumidityMeasurements" : relativeHumidityMeasurementData,
-                "Waters" : waterData,
-                "Valves" : valveData,
-                "Options" : optionsData]
+                "Waters"          : waterData,
+                "Valves"          : valveData,
+                "groovyScriptVersion" : version(),
+                "Options"         : optionsData]
 
     if (debugDevices != null) {
         if (debugBool) log.debug "debugDevices = ${resp."${debugDevices}"}"
@@ -730,54 +736,53 @@ def getStatus() {
             }
         }
     }
-    log.info "The 'getStatus()' routine has completed. Returning ${resp.size()} keys, Hub mode is '${location.mode.capitalize()}', HSM is '${location.hsmStatus.capitalize()}' states."
+    log.info "The Hubitat → Xbar Plugin 'getStatus()' function has completed. Returning ${resp.size()} keys."
     return resp
 }
 
 private mainPage() {
+    def versionMessage = "Version: HE Groovy: ${version()},  Python 3 <b>'Hubitat_XBar.5m.py'</b>: ${state?.pythonVersion?:'Not Activated'}"
     if (app.getInstallationState()=='INCOMPLETE'){
         def na="Value not initialized, awiting first run of ${app.name}"
     }
-    def currentYear = new Date().format("yyyy", location.timeZone)
     dynamicPage(name: "mainPage", uninstall:true, install:true, submitOnChange: true) {
-        def apiSetupState = (state.accessToken==null)?'Please complete API setup!':'API Setup is complete!'
+        def apiSetupState = (state.accessToken==null)?"${getImage("optionsRed")} Please complete API setup!": "${getImage("checkMarkGreen")} API Setup is complete!"
         help()
-        section( "API Access Setup" ) {
+
+        section(sectionHeader("API Access Setup")) {
             app.updateSetting("testAPI", false)
             app.updateSetting("okSend", false)
             app.updateSetting("sendAPI", false)
             app.updateSetting("pushoverDevices", false)
-            href name: "APIPageLink", title: "${apiSetupState}", description: (state.endpoint == null)?"You must add this API Oauth string to ${app.name}":"", page: "APIPage"
+            href name: "APIPageLink", title: "${apiSetupState}", description: (state.endpoint == null)?"${getImage("optionsRed")} You must add this API Oauth string to ${app.name}":"", page: "APIPage"
         }
-        section("Sensor/Device Management & Setup") {
-            href name: "devicesManagementPageLink", title: "Select sensors/devices and  MenuBar configuration", description: "", page: "devicesManagementPage"
+
+        section(sectionHeader(" MenuBar & SubMenu Display Options")) {
+            href name: "devicesManagementPageLink", title: "Select Sensors/Devices and  MenuBar Configuration", description: "", page: "devicesManagementPage"
+            href name: "optionsPageLink", title: "Select  MenuBar Display Preferences (e.g. fonts, emjoi's, etc) ", description: "", page: "optionsPage"
         }
-        section(" MenuBar & SubMenu Display Options") {
-            href name: "optionsPageLink", title: "Select display options", description: "", page: "optionsPage"
-        }
-        section(hideable: true, hidden: true, "Set a Custom Application Name") {
+
+        section(hideable: true, hidden: changeLabel?:true, sectionHeader("App Control")) {
             def newLabel = app.name.takeWhile { it != '<' }
+            paragraph "Set a Custom Application Name"
             input "changeLabel", "bool",
                 title: "Change Application Name?  Default: ${newLabel}",
                 default: false,
                 submitOnChange: true,
                 required: false
         }
-        if (changeLabel) {
-            section() {
+        section(hideable: !changeLabel, hidden: !changeLabel) {
                 app.updateLabel(newLabel)
                 label title: "Assign a Custom App Name", required: false
-                app.updateSetting("changeLabel",[value:"false",type:"bool"])
-            }
+//                app.updateSetting("changeLabel",[value:"false",type:"bool"])
         }
-        section(title: "Logging Options:", hideable: true, hidden: true) {
-            paragraph "Enable Info logging for 30 minutes will enable info logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for checking if the app is performing actions as expected."
-            input "infoBool", "bool", title: "Enable Info logging for 30 minutes", submitOnChange: false, required:false, defaultValue: false
-            paragraph "Enable Debug logging for 30 minutes will enable debug logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for troubleshooting problems."
-            input "debugBool", "bool", title: "Enable debug logging for 30 minutes", submitOnChange: false, required:false, defaultValue: false
-            paragraph "Enable Debug Device logging for 30 minutes will enable debug logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for troubleshooting problems."
+        section(hideable: true, hidden: true, sectionHeader("Logging Options")) {
+            paragraph "Enable <b>Info</b> logging for 30 minutes will enable info logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for checking if the app is performing actions as expected."
+            input "infoBool", "bool", title: "Enable <b>INFO</b> logging <u>for 30 minutes</u>", submitOnChange: false, required:false, defaultValue: false
+            paragraph "Enable <b>Debug</b> logging for 10 minutes will enable debug logs to show up in the Hubitat logs for 30 minutes after which it will turn them off. Useful for troubleshooting problems and generates many lines of information."
+            input "debugBool", "bool", title: "Enable <b>DEBUG</b> logging <u>for 10 minutes</u>", submitOnChange: false, required:false, defaultValue: false
             input "debugDevices", "enum",
-                title: "Select a Sensor capability category to send debuging information to IDE Live Logging Window",
+                title: "Select a Sensor capability category to send debuging information to IDE Live Logging Window <u>for 10 minutes</u>",
                 options: ["Temp Sensors", "Contact Sensors", "Presence Sensors", "Motion Sensors", "Switches", "Locks",
                           "Music Players", "Thermostats", "RelativeHumidityMeasurements"].sort(),
                 required: false,
@@ -786,15 +791,23 @@ private mainPage() {
         }
         section {
             section() {
+                if ((state?.pythonVersion) && (version() != state?.pythonVersion)) {
+                    versionMessage ="${versionMessage}<span style='color:red'> Warning: Incompatible script version(s) detected. Please UPGRADE to same version numbers!</span>"
+                    donwloadLinkMessage = "<a href='https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py' target='_blank'>Download Hubitat_XBar.5m.py</a>  Then File/Save the file to the Xbar Plugin folder at '${state?.scriptPath}'\n"
+                } else {
+                    donwloadLinkMessage = ""
+                }
                 paragraph("${xBarLogo}" +
                           "Hubitat → Xbar Plugin\n" +
-                          "Version: HE Groovy: ${version()},  Python3 Script: ${state.pythonVersion}\n" +
-                          "<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D4PYWK33KARSS&source=url'>Donations to support this application graciously welcomed via PayPal™.</a><br>" +
-                          "<small><i>Copyright \u00a9 2018-${currentYear} SandersSoft™ Inc - All rights reserved.</i></small><br>")
+                          "Version: ${versionMessage}\n" +
+                          donwloadLinkMessage +
+                          paypalFooter()
+                         )
             }
         }
     }
 }
+
 
 def APIPage() {
     dynamicPage(name: "APIPage") {
@@ -808,8 +821,8 @@ def APIPage() {
                 state.endpoint=getFullLocalApiServerUrl()+ "/?access_token=${state.accessToken}"
                 def localUri = getFullLocalApiServerUrl()+ "/Test/" + "?access_token=${state.accessToken}"
                 def XbarAPIString = "${state.accessToken}~${state.endpointURL}"
-                paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste the following API string from the red box below into Xbar's Plugin Browser View for <u>Hubitat XBar for MacOS</u> <b>Hubitat Oauth String</b>"
-                paragraph "<html><head></b><style>p.ex1{border: 5px solid red; padding-left: 10px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b></body></html>"
+                paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste the following API string from the red box below into <a href=xbar://app.xbarapp.com/openPlugin>Xbar's Plugin Browser View for <b>Hubitat_XBar.5m.py</b> <i>'Hubitat Oauth String'</i></a>"
+                paragraph "<html><head></b><style>p.ex1{border: 5px solid red; width: 520px; padding-right: 10px; padding-left: 20px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b></body></html>"
             }
         }
         section("API Testing Options") {
@@ -935,20 +948,18 @@ def disableAPIPage() {
 
 def devicesManagementPage() {
     dynamicPage(name:"devicesManagementPage") {
-
-        section("Sensors & Devices (Required)") {
-            href name: "devicesPageLink", title: "Select the sensors/devices to display/control", required: true, description: "", page: "devicesPage"
+        section(sectionHeader("Sensors & Devices (Required)")) {
+            href name: "devicesPageLink", title: "Select the sensors/devices to display/control <b>(Required)</b>", required: true, description: "", page: "devicesPage"
         }
-        section(' MenuBar Icons (Required)') {
-            href name: "devicesTopMenuBarPageLink", title: "Select icons for the  MenuBar", required: true, description: "", page: "devicesTopMenuBarPage"
+        section(sectionHeader(' MenuBar Icons (Required)')) {
+            href name: "devicesTopMenuBarPageLink", title: "Select icons for the  MenuBar <b>(Required)</b>", required: true, description: "", page: "devicesTopMenuBarPage"
         }
     }
 }
 
 def devicesTopMenuBarPage() {
     dynamicPage(name:"devicesTopMenuBarPage") {
-        section("MacOS XBar Display: Select up to 4 devices to display a status.") {
-            paragraph "The  MenuBar runs along the top of the screen."
+        section(sectionHeader("MacOS XBar Display: Select up to 4 devices to display a status.")) {
             input name: "displaySensorCapability", type: "enum",
                 title: " MenuBar: Select up to 4 Sensor Capabilities for the  MenuBar Icons",
                 options: ['contactSensor':'Contact','lock':'Lock','switch':'Switch','temperatureMeasurement':'Temperature Measurement'],
@@ -969,13 +980,19 @@ def devicesTopMenuBarPage() {
                 }
             }
         }
-        section("Display Hubitat Safety Monitor (HPM) in  MenuBar") {
-            def displaySensorCapabilityMessage = displaySensorCapability?"along with the ${displaySensorCapability.size()} sensor(s) selected above":''
-            input "displaySensorShowName", "bool",
-                title: "Add a Hubitat Safety Monitor (HPM) status icon to the  MenuBar ${displaySensorCapabilityMessage}",
-                submitOnChange: true,
-                default: false,
-                required: true
+        // Check to see if user has HSM installed and activated
+        if(location.hsmStatus) {
+            section(sectionHeader("Display <b>Hubitat Safety Monitor (HPM)</b> in  MenuBar")) {
+                def displaySensorCapabilityMessage = displaySensorCapability?"along with the ${displaySensorCapability.size()} sensor(s) selected above":''
+                input "displaySensorShowName", "bool",
+                    title: "Add a Hubitat Safety Monitor (HPM) status icon to the  MenuBar ${displaySensorCapabilityMessage}",
+                    submitOnChange: true,
+                    default: false,
+                    required: true
+            }
+        }
+        section {
+            paragraph "* The  MenuBar runs along the top of the screen."
         }
     }
 }
@@ -983,7 +1000,7 @@ def devicesTopMenuBarPage() {
 
 def devicesPage() {
     dynamicPage(name:"devicesPage") {
-        section ("Choose the sensor devices to be displayed & controlled in the ${app.name} menu") {
+        section (sectionHeader("Choose the sensor devices to be displayed & controlled in the ${app.name} menu")) {
             paragraph "Select devices that you want to be displayed below the top  MenuBar (in the Xbar Sub-menu)."
             input "contacts", "capability.contactSensor",
                 title: "Which Contact Sensors?",
@@ -1046,7 +1063,7 @@ def devicesPage() {
 
 def iconsPage() {
     dynamicPage(name:"iconsPage", hideWhenEmpty: true) {
-        section("Emoji Picker") {
+        section(sectionHeader("Emoji Picker")) {
             href(name: "hrefNotRequired",
                  title: "BROWSE Emoji's",
                  required: false,
@@ -1056,7 +1073,7 @@ def iconsPage() {
                  description: "Tap here to view valid list of Emoji names and cut & paste into the fields below"
                 )
         }
-        section("Optional: Customize Sensor Type/Status Emoji Naming Display Options") {
+        section(sectionHeader("Optional: Customize Sensor Type/Status Emoji Naming Display Options")) {
             input "motionActiveEmoji", "text",
                 title: "Emoji ShortCode ':xxx:' to Display for Motion Sensor = 'Active' Default='⇠⇢'",
                 required: false
@@ -1106,8 +1123,8 @@ def fontsPage() {
                 multiple: false,
                 required: false
             input "mainFontSize", "number",
-                title: " 'MenuBar' Font Pitch Size (default is '14').",
-                default: 14,
+                title: " 'MenuBar' Font Pitch Size (default is '12').",
+                default: 12,
                 required: false
         }
         section("Optional Data Display: DISPLAY FONTS, COLORS & SEPARATOR BARS: Mac Font Name for Display (warning: The Font Name MUST exist on the Mac.  Leave blank for 'Menlo'") {
@@ -1118,8 +1135,8 @@ def fontsPage() {
                 multiple: false,
                 required: false
             input "fixedPitchFontSize", "number",
-                title: "Data: Fixed Font Pitch Size (default is '14').",
-                default: 14,
+                title: "Data: Fixed Font Pitch Size (default is '12').",
+                default: 12,
                 required: false
             input "fixedPitchFontColor", "enum",
                 title: "Data: Fixed Font Color (default Color is 'Black' if field left blank.  If Mac is in 'Dark Mode', Font Color will be set to 'White')",
@@ -1489,15 +1506,40 @@ def colorChoiceList() {
             "lightslategray","darksalmon","crimson","sandybrown","lightpink","seashell"].sort()
 }
 
+def getImage(type) {
+    def loc = "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/"
+    if(type == "Blank") return "${loc}blank.png height=40 width=5}>"
+    if(type == "checkMarkGreen") return "${loc}checkMarkGreen2.png height=30 width=30>"
+    if(type == "optionsGreen") return "${loc}options-green.png height=30 width=30>"
+    if(type == "optionsRed") return "${loc}options-red.png height=30 width=30>"
+    if(type == "instructions") return "${loc}instructions.png height=30 width=30>"
+    if(type == "logo") return "${loc}logo.png height=60>"
+}
+
+def getFormat(type, myText="") {
+    if(type == "header-blue") return "<div style='color:#ffffff;font-weight: bold;background-color:#309bff;border: 1px solid;box-shadow: 2px 3px #A9A9A9'>${myText}</div>"
+    if(type == "line") return "<hr style='background-color:#1A77C9; height: 1px; border: 0;'>"
+    if(type == "title") return "<h2 style='color:#1A77C9;font-weight: bold'>${myText}</h2>"
+}
+
 def help() {
-    section(hideable: true, hidden: false, "${app.name} Online Documentation") {
+    section("${getImage('instructions')} <b>${app.name} Online Documentation</b>", hideable: true, hidden: true) {
         paragraph "<a href='https://github.com/KurtSanders/Hubitat-Xbar#readme' target='_blank'><h4 style='color:DodgerBlue;'>Click this link to view Online Documentation for ${app.name}</h4></a>"
     }
+}
+
+def sectionHeader(title){
+    return getFormat("header-blue", "${getImage("Blank")}"+" ${title}")
 }
 
 def supportedMusicPlayerDeviceCommands() {
     return ['nextTrack','pause','play','previousTrack','stop']
 }
-String version() {return "1.0.1"}
+String paypalFooter() {
+    def currentYear = new Date().format("yyyy", location.timeZone)
+    return "\n<a href='https://www.paypal.com/donate/?hosted_button_id=E4WXT86RTPXDC'>Donations to support this application graciously welcomed via PayPal™.</a>" + QRCode() +
+        "<small><i>Copyright \u00a9 2018-${currentYear} SandersSoft™ Inc - All rights reserved.</i></small><br>"
+}
+String QRCode() {return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/SanderSoftQR%20Code.png style='float: left; padding: 0px 10px 0px 0px;' alt='SanderSoft QRCode' width=90 height=90 align=left /><br>"}
 String getxBarLogo(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Hubitat → Xbar Logo' height=60 align=left /><br>"}
 String getDoneImage(){ return "<img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/done.png width=60 style='float: left; padding: 0px 10px 0px 0px;' alt='Done!' height=60 align=left /><br>"}

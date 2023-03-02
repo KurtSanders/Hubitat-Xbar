@@ -1,12 +1,12 @@
 {
 	"packageName": "Hubitat → Xbar App for the Apple  macOS™ Menubar",
 	"author": "Kurt Sanders",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"minimumHEVersion": "2.3.4.150",
-	"dateReleased": "2023-02-22",
-	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar/blob/master/README.md",
-	"licenseFile": "",
-	"releaseNotes": "1) Completely re-engineered for use with Python3 and Xbar beta application (Python2 & Bitbar are depreciated).\\n2) Integration of Hubitat™ sensors, devices, modes and HSM on macOS menubar.\\n3) Removed use of Hi Res icons which are not supported very well on Xbar and Apple MenuBar.\\n4) Added version numbers for both groovy and python script files in the Hubitat → Xbar app and Plugin",
+	"dateReleased": "2023-03-02",
+	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar#hubitat--xbar-for-use-with-hubitat-elevation--apple",
+	"licenseFile": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/LICENSE",
+	"releaseNotes": "After this upgrade, you must manually upgrade the Xbar plugin \"Hubitat_XBar.5m.py\" to this same 1.0.2 release.\\\\nFollow the install instructions in the documentation.\\\\nThis release fixes several display bugs, HSM, standardizes default font sizes, reduces log view messages, verifies release numbers of python and groovy scripts to be the same and outputs a message to upgrade if different.",
 	"apps" : [
 		{
 			"id" : "cb421dcc-2aa9-4d0c-82eb-40497d34623c",

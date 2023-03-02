@@ -45,11 +45,12 @@ import urllib.parse
 import urllib.request
 from sys import exit
 
-scriptVersion = "1.0.1"
-
-start = timeit.default_timer()
+scriptVersion = "1.0.2"
 DEBUG = False
-scriptFile=__file__
+start = timeit.default_timer()
+scriptPathFilename=__file__
+scriptFilename=os.path.basename(__file__)
+scriptPath=os.path.dirname(__file__)
 
 # Provide text notifications to macOS via oascript
 def notify(title, text):
@@ -63,12 +64,12 @@ XBARDarkMode = True if os.environ.get("XBARDarkMode") == "true" else False
 
 if xbarOauthString is None:
     try:
-        with open("{}{}".format(scriptFile,".vars.json")) as xbar_json_file:
+        with open("{}{}".format(scriptPathFilename,".vars.json")) as xbar_json_file:
             jsonvars  = json.load(xbar_json_file)
             xbarOauthString = jsonvars[xbarVARname]
     except (FileNotFoundError, KeyError):
         notify ("Severre Error",
-                "Please set the required Xbar environment variable {} in the Xbar Pluggin {}".format(xbarVARname,os.path.basename(scriptFile)))
+                "Please set the required Xbar environment variable {} in the Xbar Pluggin {}".format(xbarVARname,scriptFilename))
         exit(1)
 
 smartAppSecret = xbarOauthString.split("~")[0]
@@ -79,8 +80,8 @@ verbose_request_notify = os.environ.get("VAR_verbose_request_notify",False)
 #Check to insure required variables are defined
 if ((smartAppSecret is None) or (smartAppURL is None)):
         notify ("Severre Error",
-                "Please set the required Xbar environment variable {} in the Xbar Pluggin {}".format(xbarVARname,os.path.basename(scriptFile)))
-        exit(1)
+                "Please set the required Xbar environment variable {} in the Xbar Pluggin {}".format(xbarVARname,scriptFilename))
+        exit(2)
 
 
 def hubitatAPIRequest(url):
@@ -91,7 +92,7 @@ def hubitatAPIRequest(url):
         urllib.request.urlopen(request)
     except (urllib.error.HTTPError, urllib.error.URLError) as err:
         notify("Xbar Error","HTTPS Error Encountered: Communicating to Hub API caused the following error: {}".format(str(err)))
-        exit(1)
+        exit(3)
 
 # Define class for useful functions
 class myUtilities:
@@ -155,7 +156,7 @@ if ((len(sys.argv)>1) and (sys.argv[1] == "request")):
     notify("Xbar → Hubitat: {}".format(sys.argv[1].title()),"{}\nWaiting {} secs for XBar auto refresh status".format(sys.argv[4],waittime))
     time.sleep(waittime)
     notify("Xbar → Hubitat","XBar auto refresh started")
-    request = "xbar://app.xbarapp.com/refreshPlugin?path={}".format(os.path.basename(__file__))
+    request = "xbar://app.xbarapp.com/refreshPlugin?path={}".format(scriptFilename)
     subprocess.call(['open', request])
         
 
@@ -271,7 +272,7 @@ def getOptions(dictvarname, nonedefault):
 # Builds the param statement for Xbar to launch the "open" command
 # noinspection PyShadowingNames
 def openParamBuilder(openCommand):
-    rc = " terminal=false shell='{}' ".format(scriptFile)
+    rc = " terminal=false shell='{}' ".format(scriptPathFilename)
     i = 0
     for word in openCommand.split():
         i += 1
@@ -285,7 +286,7 @@ def verifyInteger(intValue, errorIntValue):
         return errorIntValue
 
 # Set URLs
-f = dict(access_token=smartAppSecret,path=scriptFile,nodename=os.uname()[1],pythonVersion=scriptVersion)
+f = dict(access_token=smartAppSecret,scriptPath=scriptPath,scriptFilename=scriptFilename,nodename=os.uname()[1],pythonVersion=scriptVersion)
 statusURL = "{}{}{}".format(smartAppURL, "GetStatus/?", urllib.parse.urlencode(f))
 contactURL = smartAppURL + "ToggleSwitch/?access_token=" + smartAppSecret + "&id="
 valveURL = smartAppURL + "ToggleValve/?access_token=" + smartAppSecret + "&id="
@@ -298,7 +299,7 @@ modeURL = smartAppURL + "SetMode/?access_token=" + smartAppSecret + "&id="
 hsmURL = smartAppURL + "SetHSM/?access_token=" + smartAppSecret + "&id="
 
 # Set the callback script for switch/level commands from parameters
-callbackScript = "'{}'".format(scriptFile)
+callbackScript = "'{}'".format(scriptPathFilename)
 
 # Make the call the to the API and retrieve JSON data
 # Create the urllib2 Request
@@ -313,7 +314,7 @@ except (urllib.error.HTTPError, urllib.error.URLError) as err:
     print(":thumbsdown: HTTPS Error Encountered: Communicating to Hub API caused the following error: {}".format(
         str(err)))
     print("==> Please check your Internet Connectivity and Refresh Xbar again when Online")
-    exit(99)
+    exit(500)
 
 # Check for Return Code Status
 # noinspection PyUnboundLocalVariable
@@ -326,7 +327,7 @@ if response.code != 200:
     for response_info_name in response.info():
         if response_info_name[0:6] == 'x-rate':
             print("----{:20} = {:>3}".format(response_info_name, response.info()[response_info_name]))
-    exit(99)
+    exit(501)
 
 # Parse the JSON data
 try:
@@ -344,11 +345,8 @@ if "error" in j:
     print("Error Details: ", j['error'])
     if "error_description" in j:
         print(":thumbsdown: Error Description: ", j['error_description'])
-    exit(99)
+    exit(502)
 
-# Get the sensor arrays from the JSON data
-# print (json.dumps(j, indent=2))
-# exit(0)
 try:
     contacts = j['Contact Sensors']
     currentmode = j['CurrentMode']
@@ -367,13 +365,13 @@ try:
     thermostats = j['Thermostats']
     valves = j['Valves']
     waters = j['Waters']
+    groovyScriptVersion = j['groovyScriptVersion']
 except KeyError as e:
     print(":rage:")
     print("---")
     print(":thumbsdown: Json File Import Error Details: ", e)
-    exit(99)
+    exit(4)
     
-
 def eventGroupByDate(tempList, prefix=None, valueSuffix=""):
     strLen = len(tempList)
     if strLen == 0: return
@@ -422,11 +420,11 @@ presensceNotPresentEmoji = getOptions("presensceNotPresentEmoji", ':x:')
 presenceDisplayMode = getOptions("presenceDisplayMode", 0)
 mainFontName = "'{}'".format(getOptions("mainFontName", "Menlo"))
 mainFontSize = getOptions("mainFontSize", "14").__str__()
-fixedPitchFontSize = getOptions("fixedPitchFontSize", "14").__str__()
+fixedPitchFontSize = getOptions("fixedPitchFontSize", "12").__str__()
 fixedPitchFontName = "'{}' ".format(getOptions("fixedPitchFontName", "Menlo"))
 fixedPitchFontColor = getOptions("fixedPitchFontColor", "black")
 subMenuFontName = "'{}'".format(getOptions("subMenuFontName", "Monaco"))
-subMenuFontSize = getOptions("subMenuFontSize", "14").__str__()
+subMenuFontSize = getOptions("subMenuFontSize", "12").__str__()
 subMenuFontColor = getOptions("subMenuFontColor", "black")
 subMenuMoreColor = getOptions("subMenuMoreColor", "black")
 hortSeparatorBarBool = getOptions("hortSeparatorBarBool", True)
@@ -437,9 +435,6 @@ colorChoices = getOptions("colorChoices", None)
 colorBulbEmoji = getOptions("colorBulbEmoji", "🌈")
 dimmerBulbEmoji = getOptions("dimmerBulbEmoji", "🔆")
 dimmerValueOnMainMenu = getOptions("dimmerValueOnMainMenu", False)
-
-hsmStates = ["armedAway", "armedHome", "armedNight", "disarmed"]
-hsmCmds = ["armAway", "armHome", "armNight", "disarm", "armRules", "disarmRules", "disarmAll", "armAll", "cancelAlerts"]
 
 # Read Temperature Formatting Settings
 numberOfDecimals = verifyInteger(getOptions("numberOfDecimals", "0"), 0)
@@ -609,16 +604,17 @@ if mainDisplay is not None:
             if isinstance(mainDisplay[x]['value'], int) or isinstance(mainDisplay[x]['value'], float):
                 formattedMainDisplay += formatter.formatNumber(mainDisplay[x]['value']) + degree_symbol
                 mainMenuColor = thermoColor
-                print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=12', mainMenuColor))
+                print("{} | size={} {} dropdown=false".format(formattedMainDisplay, mainFontSize, mainMenuColor))
             elif mainDisplay[x]['emoji'] is not None:
-                print("{} | dropdown=false size=12".format(mainDisplay[x]['emoji']))
+                print("{} | dropdown=false size={}".format(mainDisplay[x]['emoji'],mainFontSize))
             else:
-                print("{} | {} dropdown=false size=12".format(mainDisplay[x]['value'], mainMenuColor))
+                print("{} | {} dropdown=false size={}".format(mainDisplay[x]['value'], mainMenuColor,mainFontSize))
         
     if mainDisplaylen > 0:
         maxLengthDisplayName = 0
         print("---")
         print("Main Menu Bar Icon Status ({}) {}".format(mainDisplaylen, buildFontOptions(2)))
+        colorText=''
         for x in range(len(mainDisplay)):
             if isinstance(mainDisplay[x]['value'], int) or isinstance(mainDisplay[x]['value'], float):
                 mainDisplay[x]['value'] = str(mainDisplay[x]['value'])
@@ -628,10 +624,17 @@ if mainDisplay is not None:
                 mainDisplay[x]['name'] = mainDisplay[x]['label']
             maxLengthDisplayName = len(mainDisplay[x]['name']) if len(mainDisplay[x]['name']) > maxLengthDisplayName else maxLengthDisplayName
         for x in range(len(mainDisplay)):
-            print("--{} {} {} {} ".format(mainDisplay[x]['emoji'],mainDisplay[x]['name'].ljust(maxLengthDisplayName, '.'), str(mainDisplay[x]['value']).title(), buildFontOptions(3)))
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
+            print("--{} {} {} {} {}".format(mainDisplay[x]['emoji'],mainDisplay[x]['name'].ljust(maxLengthDisplayName, '.'), str(mainDisplay[x]['value']).title(), buildFontOptions(3),colorText))
+            colorSwitch = not colorSwitch
 else:
     formattedMainDisplay = "💠"
-    print("{} | {} {} dropdown=false".format(formattedMainDisplay, 'size=12', mainMenuColor))
+    print("{} | size={} {} dropdown=false".format(formattedMainDisplay, mainFontSize, mainMenuColor))
+
+if scriptVersion != groovyScriptVersion:
+    print("Version MisMatch - Upgrade Available | color=red size={}".format(mainFontSize))
+    print("--{} : {} | color=blue size={}".format(scriptFilename,scriptVersion,mainFontSize))
+    print("--{} : {} | color=green size={}".format("HPM Hubitat → Xbar", groovyScriptVersion,mainFontSize))
 
 # Set the static amount of decimal places based on setting
 if matchOutputNumberOfDecimals is True:
@@ -703,7 +706,7 @@ if (thermostats is not None) and (len(thermostats) > 0):
                               "color="+numberToColorGrad(id, "blue"), \
                               "shell="+ callbackScript, " param1=request param2="+str(
                                 coolSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
-                    print("----", ':heavy_check_mark:', str(currentCoolingSetPoint) + degree_symbol, "| color=black size=14 font='Menlo Bold'")
+                    print("----", ':heavy_check_mark:', str(currentCoolingSetPoint) + degree_symbol, "| color=black size={} font='Menlo Bold'".format(mainFontSize))
                     for c in range(currentCoolingSetPoint + 1, currentCoolingSetPoint + 6):
                         thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(c) + degree_symbol, buildFontOptions(3), "color=gray", \
@@ -724,7 +727,7 @@ if (thermostats is not None) and (len(thermostats) > 0):
                             c) + degree_symbol, buildFontOptions(3), "color="+numberToColorGrad(id, "red"), \
                               "shell=" + callbackScript, " param1=request param2=" + str(
                                 heatingSetpointURL + str(c)), " param3=Thermostat", thermo_param4, " terminal=false refresh=false")
-                    print("----", ':heavy_check_mark:', str(currentHeatingSetPoint) + degree_symbol, "| color=black size=14 font='Menlo Bold'")
+                    print("----", ':heavy_check_mark:', str(currentHeatingSetPoint) + degree_symbol, "| color=black size={} font='Menlo Bold'".format(mainFontSize))
                     for c in range(currentHeatingSetPoint - 1, currentHeatingSetPoint - 6, -1):
                         thermo_param4 = ' param4=\"Setting {} to {}\"'.format(thermostat['displayName'], str(c) + degree_symbol)
                         print("----• ", str(c) + degree_symbol, buildFontOptions(3), "color=gray", \
@@ -751,7 +754,7 @@ if temps is not None:
             for x in range(0, extraLength): whiteSpace += ' '
             colorText = ''
             currentValue = formatter.formatNumber(sensor['value'])
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 # noinspection PyTypeChecker
                 print("{} More...{}".format(countSensors - mainMenuMaxItems, buildFontOptions(2)))
@@ -792,7 +795,7 @@ if relativeHumidityMeasurements is not None:
             for x in range(0, extraLength): whiteSpace += ' '
             colorText = ''
             currentValue = formatter.formatNumber(sensor['value'])
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 # noinspection PyTypeChecker
                 print("{} More...{}".format(countSensors - mainMenuMaxItems, buildFontOptions(2)))
@@ -827,7 +830,7 @@ if (modes is not None) and len(modes) > 0:
     print("--Modes (Select to Change)" + buildFontOptions())
     for i, mode in enumerate(modes):
         colorText = ''
-        colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+        colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
         if mode['name'] not in currentmode['name']:
             currentModeURL = modeURL + urllib.parse.quote(mode['name'])
             mode_param4 = ' param4=\"Setting House Mode to {}\"'.format(mode['name'])
@@ -844,18 +847,26 @@ if hsmDisplayBool and hsmState is not None:
     print("Hubitat™ Safety Monitor is {}{}".format(hsmState.title(),buildFontOptions()))
     # Verify the HSM is configured:
     if hsmState != "unconfigured":
+        hsmStates = {
+        "armedAway"  : "armAway",
+        "armedHome"  : "armHome", 
+        "armedNight" : "armNight", 
+        "disarmed"   : "disarm"
+        }
+        hsmCmds = ["armAway", "armHome", "armNight", "disarm", "armRules", "disarmRules", "disarmAll", "armAll", "cancelAlerts"]
         print("--Select to Change" + buildFontOptions())
         for hsmCmd in hsmCmds:
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
-            if hsmCmd in hsmState:
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
+            if hsmCmd == hsmStates.get(hsmState,None):
                 currenthsmDisplay = " (Current)"
                 currenthsmURL = ""
+                colorText='color=#FF0000'
             else:
                 currenthsmURL = hsmURL + hsmCmd
                 currenthsmDisplay = ""
-                hsm_param4 = ' param4=\"Setting HSM to {}\"'.format(hsmCmd.title())
+                hsm_param4 = ' param4=\"Setting HSM to {}\"'.format(hsmCmd)
                 currenthsmURL = "shell=" + callbackScript + ' param1=request param2=' + currenthsmURL + ' param3=hsm ' + hsm_param4 + ' terminal=false refresh=false'
-            print("--• {}{}".format(hsmCmd.title(), currenthsmDisplay), buildFontOptions(3), colorText, currenthsmURL)
+            print("--• {}{}".format(hsmCmd, currenthsmDisplay), buildFontOptions(3), colorText, currenthsmURL)
             colorSwitch = not colorSwitch
 
 # Output Contact Sensors
@@ -884,7 +895,7 @@ if contacts is not None:
                     subMenuTitle = "More Contact Sensors Closed..."
             else:
                 sym = contactOpenEmoji
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions(2)))
                 if not subMenuCompact: print("--{} ({})".format(menuTitle, str(countSensors - mainMenuMaxItems)), \
@@ -926,7 +937,7 @@ if motion is not None:
                     subMenuTitle = "More Sensors Inactive..."
             else:
                 sym = motionActiveEmoji
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions(2)))
                 if not subMenuCompact: print("-- " + menuTitle + " (" + str(countSensors - mainMenuMaxItems) + ")")
@@ -983,7 +994,7 @@ if presences is not None:
                     notPresentSubmenu = True
                 # Set the submenu text
                 notPresentMenuText = "--"
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             print(subMenuText + notPresentMenuText, sensor['name'], whiteSpace, emoji, buildFontOptions(3), colorText)
             if (sensor['eventlog'] is not None) and (len(sensor['eventlog']) > 0):
                 eventGroupByDate([d for d in sensor['eventlog'] if d['name'] in 'presence'], subMenuText, "")
@@ -1036,7 +1047,7 @@ if locks is not None:
                     menuTitle, str(countSensors - mainMenuMaxItems), buildFontOptions()
                 ))
                 subMenuText = "--"
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if useImages is True:
                 print(subMenuText, sensor['name'] + ' is ' + sensor['value'].capitalize(), buildFontOptions(
                     3) + colorText + ' shell=' + callbackScript, ' param1=request param2=' + currentLockURL, \
@@ -1112,7 +1123,7 @@ if switches is not None:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Switches Off..."
             currentSwitchURL = contactURL + sensor['id']
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions()))
                 if not subMenuCompact: print("--{} ({}) {}".format(
@@ -1183,7 +1194,7 @@ if switches is not None:
                 print(subMenuText + "-- 🎯 Event History", buildFontOptions(3))
                 eventGroupByDate(sensor['eventlog'], subMenuText + indent, "")
             colorSwitch = not colorSwitch
-exit(0)
+
 # Output Media Players
 if musicplayers is not None:
     sensorName = "MusicPlayers"
@@ -1216,7 +1227,7 @@ if musicplayers is not None:
                 if mainMenuAutoSizeDict[sensorName] is True:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Media Players Inactive..."
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions()))
                 if not subMenuCompact: print("--{} ({}) {}".format(
@@ -1357,7 +1368,7 @@ if valves is not None:
                     if mainMenuMaxItems > i: mainMenuMaxItems = i
                     subMenuTitle = "More Valves Close..."
             currentValveURL = valveURL + sensor['id']
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions()))
                 if not subMenuCompact: print("--{} ({}) {}".format(
@@ -1403,7 +1414,7 @@ if waters is not None:
                     subMenuTitle = "More Sensors Inactive..."
             else:
                 sym = dimmerBulbEmoji
-            colorText = 'color=#333333' if colorSwitch else 'color=#666666'
+            colorText = 'color=#0000FF' if colorSwitch else 'color=#008000'
             if i == mainMenuMaxItems:
                 print("{} {} {}".format(countSensors - mainMenuMaxItems, subMenuTitle, buildFontOptions(2)))
                 if not subMenuCompact: print("-- " + menuTitle + " (" + str(countSensors - mainMenuMaxItems) + ")")
