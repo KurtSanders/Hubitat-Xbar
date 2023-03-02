@@ -63,6 +63,7 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 			sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
 			exit
 	```
+	
 	* **Xbar Plugin Configuration Steps** 
 		* Configure the required OAuth API (format xxx-xxx~http://xxx) in the Xbar 'Hubitat_XBar.5m.py' plugin
 		* Click on the Xbar Icon in the top Mac menubar
@@ -83,6 +84,20 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	* The xbar Apple menubar screen display can be refreshed manually by clicking on the xbar logo or displayed sensor icon/value in the Apple menubar, and pressing (⌘-R).
 	* Hubitat© sensors/devices which can be instructed to change their state, Hub mode and HPM states can be highlighted and clicked in the Xbar's screen display to change their state.  Xbar will automatically refresh the display screen after a few seconds to reflect the new selected sensor states.  
 	* Some Hubitat© sensors/devices may not display a state accurately if they are slow to reflect their state change on the Hubitat© hub.  These sluggish sensors/devices will eventually reflect their correct state in the Xbar display when they are eventually updated on the Hubitat© hub. 
+
+## Application and Plugin Updates
+* You must use HPM for all updates to your Hubitat Elevation Hub Apps
+* After an HPM update of the Hubitat → Xbar app, you must complete the following steps on the  Apple Mac.
+  * Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter:
+
+
+
+	```Shell
+			cd ~/Library/Application\ Support/xbar/plugins
+			curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+			sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+			exit
+	```
 
 ## Hubitat → MenuBar Emoji Icon Mapping
 
