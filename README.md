@@ -58,9 +58,9 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 		* Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter so they execute individually:
 
 	```Shell
-cd ~/Library/Application\ Support/xbar/plugins
-curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
-sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+	cd ~/Library/Application\ Support/xbar/plugins
+	curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+	sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
 exit
 	```
 
@@ -91,10 +91,10 @@ exit
 * After an HPM update of the Hubitat → Xbar app, you must highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the  Apple Terminal screen and press Enter so they execute individually:
 
 	```Shell
-cd ~/Library/Application\ Support/xbar/plugins
-curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
-sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
-exit
+	cd ~/Library/Application\ Support/xbar/plugins
+	curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+	sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+	exit
 	```
 
 ## Hubitat → MenuBar Emoji Icon Mapping
