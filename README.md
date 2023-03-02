@@ -55,14 +55,15 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	   		* :heavy_check_mark: 'Update Automatically'
 	* Install the Xbar Python Script **Hubitat_XBar.5m.py** to your Xbar plugin script file  folder ("~/Library/Application\ Support/xbar/plugins") using the  Apple Terminal shell commands below. 
 		* Launch the  Apple **'Terminal' App** located in your  Apple Applications folder under 'Utilities' sub-folder. 
-		* Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter:
+		* Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter so they execute individually:
 
 	```Shell
-			cd ~/Library/Application\ Support/xbar/plugins
-			curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
-			sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
-			exit
+cd ~/Library/Application\ Support/xbar/plugins
+curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+exit
 	```
+
 	
 	* **Xbar Plugin Configuration Steps** 
 		* Configure the required OAuth API (format xxx-xxx~http://xxx) in the Xbar 'Hubitat_XBar.5m.py' plugin
@@ -87,16 +88,13 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 
 ## Application and Plugin Updates
 * You must use HPM for all updates to your Hubitat Elevation Hub Apps
-* After an HPM update of the Hubitat → Xbar app, you must complete the following steps on the  Apple Mac.
-  * Highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the Terminal screen and press Enter:
-
-
+* After an HPM update of the Hubitat → Xbar app, you must highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the  Apple Terminal screen and press Enter so they execute individually:
 
 	```Shell
-			cd ~/Library/Application\ Support/xbar/plugins
-			curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
-			sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
-			exit
+cd ~/Library/Application\ Support/xbar/plugins
+curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
+sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
+exit
 	```
 
 ## Hubitat → MenuBar Emoji Icon Mapping
