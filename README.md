@@ -61,9 +61,8 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	cd ~/Library/Application\ Support/xbar/plugins
 	curl -s -O -J -L "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Hubitat_XBar.5m.py" 
 	sudo chmod +x ~/Library/Application\ Support/xbar/plugins/Hubitat_XBar.5m.py
-exit
+	exit
 	```
-
 	
 	* **Xbar Plugin Configuration Steps** 
 		* Configure the required OAuth API (format xxx-xxx~http://xxx) in the Xbar 'Hubitat_XBar.5m.py' plugin
