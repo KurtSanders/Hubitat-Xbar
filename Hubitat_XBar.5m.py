@@ -7,7 +7,7 @@
 # This executable Python3 file must be installed in the XBar Plugins application directory (~/Library/Application\ Support/xbar/plugins)
 #
 # <xbar.title>Hubitat → XBar for MacOS</xbar.title>
-# <xbar.version>v1.0.1</xbar.version>
+# <xbar.version>v1.0.3</xbar.version>
 # <xbar.author>Kurt Sanders</xbar.author>
 # <xbar.author.github>KurtSanders</xbar.author.github>
 # <xbar.desc>Provides a view and control of Hubitat sensors from the macOS menubar</xbar.desc>
@@ -45,7 +45,8 @@ import urllib.parse
 import urllib.request
 from sys import exit
 
-scriptVersion = "1.0.2"
+scriptVersion = "1.0.3"
+# DEBUG = True
 DEBUG = False
 start = timeit.default_timer()
 scriptPathFilename=__file__
@@ -74,6 +75,7 @@ if xbarOauthString is None:
 
 smartAppSecret = xbarOauthString.split("~")[0]
 smartAppURL = xbarOauthString.split("~")[1]
+
 verbose_schedule_notify = os.environ.get("VAR_verbose_schedule_notify",False)
 verbose_request_notify = os.environ.get("VAR_verbose_request_notify",False)
 
@@ -305,6 +307,10 @@ callbackScript = "'{}'".format(scriptPathFilename)
 # Create the urllib2 Request
 header = {"Authorization": "Bearer " + smartAppSecret}
 request = urllib.request.Request(statusURL, None, header)
+if DEBUG:
+    print("header:", header)
+    print("statusURL:", statusURL)
+    exit(0)
 # Getting the response
 try:
     response = urllib.request.urlopen(request)
@@ -527,16 +533,23 @@ if sortSensorsName is True:
         modes = sorted(modes, key=lambda k: k[sortkey])
 
 # if sortSensorsActive is True or mainMenuAutoSize is True:
+def nonesorter(a): 
+# Look for passed value of None and replace with ""
+    if not a:
+        return ""
+    return a
+
 if sortSensorsActive is True:
     sortkey = 'value'
-    temps = sorted(temps, key=lambda k: k[sortkey], reverse=sortTemperatureAscending)
-    contacts = sorted(contacts, key=lambda k: k[sortkey], reverse=True)
-    switches = sorted(switches, key=lambda k: k[sortkey], reverse=True)
-    motion = sorted(motion, key=lambda k: k[sortkey], reverse=False)
-    locks = sorted(locks, key=lambda k: k[sortkey], reverse=True)
-    relativeHumidityMeasurements = sorted(relativeHumidityMeasurements, key=lambda k: k[sortkey])
-    presences = sorted(presences, key=lambda k: k[sortkey], reverse=True)
-    musicplayers = sorted(musicplayers, key=lambda k: k['status'])
+    temps = sorted(temps, key=lambda k: nonesorter(k[sortkey]), reverse=sortTemperatureAscending)
+    contacts = sorted(contacts, key=lambda k: nonesorter(k[sortkey]), reverse=True)
+    switches = sorted(switches, key=lambda k: nonesorter(k[sortkey]), reverse=True)
+    motion = sorted(motion, key=lambda k: nonesorter(k[sortkey]), reverse=False)
+    locks = sorted(locks, key=lambda k: nonesorter(k[sortkey]), reverse=True)
+    relativeHumidityMeasurements = sorted(relativeHumidityMeasurements, key=lambda k: nonesorter(k[sortkey]))
+    presences = sorted(presences, key=lambda k: nonesorter(k[sortkey]), reverse=True)
+    musicplayers = sorted(musicplayers, key=lambda k: nonesorter(k['status']))
+
 
 # Presence sort mode by status or in submenu, sort by value desc
 if presenceDisplayMode == 1 or presenceDisplayMode == 2:
@@ -631,10 +644,14 @@ else:
     formattedMainDisplay = "💠"
     print("{} | size={} {} dropdown=false".format(formattedMainDisplay, mainFontSize, mainMenuColor))
 
-if scriptVersion != groovyScriptVersion:
-    print("Version MisMatch - Upgrade Available | color=red size={}".format(mainFontSize))
-    print("--{} : {} | color=blue size={}".format(scriptFilename,scriptVersion,mainFontSize))
-    print("--{} : {} | color=green size={}".format("HPM Hubitat → Xbar", groovyScriptVersion,mainFontSize))
+#Version Check
+try:
+    if re.sub(r"\.\d*\-?\D*$", "", scriptVersion) != re.sub(r"\.\d*\-?\D*$", "", groovyScriptVersion):
+        print("Version MisMatch - Upgrade Available | color=red size={}".format(mainFontSize))
+        print("--{} : {} | color=blue size={}".format(scriptFilename,scriptVersion,mainFontSize))
+        print("--{} : {} | color=green size={}".format("HPM Hubitat → Xbar", groovyScriptVersion,mainFontSize))
+except:
+    pass
 
 # Set the static amount of decimal places based on setting
 if matchOutputNumberOfDecimals is True:
@@ -1432,7 +1449,9 @@ if waters is not None:
 stop = timeit.default_timer()
 hortSeparatorBar()
 td = datetime.now().strftime('%a %b %d, %I:%M:%S %p').replace(' AM', 'am').replace(' PM', 'pm')
-print (":crystal_ball: Hubitat → Xbar Version: {} {}".format(scriptVersion,buildFontOptions(2)))
-print ("--Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
+print (":information_source: Plugin Information {}".format(buildFontOptions(2)))
+print ("--:crystal_ball: Hubitat App Version: {} {}".format(groovyScriptVersion,buildFontOptions(2)))
+print ("--:crystal_ball: {} Python Version: {} {}".format(scriptFilename,scriptVersion,buildFontOptions(2)))
+print ("--:older_man: Author: SanderSoft© {} {}".format(datetime.now().strftime('%Y'),buildFontOptions()))
 print ("--:loop: Program Execution RunTine: {:.1f} secs".format(stop - start), buildFontOptions())
 print ("--:crystal_ball: Last Run Time: {} {}".format(td,buildFontOptions(2)))

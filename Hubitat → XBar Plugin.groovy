@@ -17,7 +17,10 @@
 import groovy.json.JsonSlurper
 import java.util.ArrayList;
 import groovy.time.*
-String version() {return "1.0.2"}
+// import groovy.xml.MarkupBuilder
+import groovy.xml.*
+
+String version() {return "1.0.3"}
 
 definition(
     name: "Hubitat → XBar Plugin",
@@ -49,63 +52,123 @@ preferences {
 
 mappings {
 
-    path("/GetStatus/") {
+    path("/GetStatus") {
         action: [
             GET: "getStatus"
         ]
     }
-    path("/ToggleSwitch/") {
+    path("/ToggleSwitch") {
         action: [
             GET: "toggleSwitch"
         ]
     }
-    path("/SetMusicPlayer/") {
+    path("/SetMusicPlayer") {
         action: [
             GET: "setMusicPlayer"
         ]
     }
-    path("/SetLevel/") {
+    path("/SetLevel") {
         action: [
             GET: "setLevel"
         ]
     }
-    path("/SetColor/") {
+    path("/SetColor") {
         action: [
             GET: "setColor"
         ]
     }
-    path("/SetThermo/") {
+    path("/SetThermo") {
         action: [
             GET: "setThermo"
         ]
     }
-    path("/SetMode/") {
+    path("/SetMode") {
         action: [
             GET: "setMode"
         ]
     }
-    path("/SetHSM/") {
+    path("/SetHSM") {
         action: [
             GET: "setHSM"
         ]
     }
-    path("/ToggleLock/") {
+    path("/ToggleLock") {
         action: [
             GET: "toggleLock"
         ]
     }
-    path("/ToggleValve/") {
+    path("/ToggleValve") {
         action: [
             GET: "toggleCloseOpen"
         ]
     }
-    path("/Test/") {
+    path("/Test") {
         action: [
             GET: "test"
         ]
     }
+	path("/debug") {action: [GET: "debugPage"]}
 
 }
+
+def debugPage() {
+    log.debug "debugPage() started"
+    def mapValues
+    def writer = new StringWriter()
+    def html = new MarkupBuilder(writer)
+    html.html {
+        head {
+            title: "Hubitat -> Xbar"
+        }
+        body(id: "main") {
+            h2 id: "book-mark",  "Hubitat -> Xbar: Devices, Sensors, Preferences/Options"
+        }
+        table (border: 1, cellpadding: 5, cellspacing: 0, style: "border-collapse:collapse") {
+            tr {
+                th (style:"color: blue","Key")
+                th (style:"color: red","Device/Sensor/Attributes")
+            }
+            tr {
+                getStatus().collect{
+                    td (style:"color: green;font-weight:bold","${it.key} ${it.value instanceof List?'('+it.value.size()+')':''}")
+                    if (it.value instanceof List) {
+                        it.value.each {
+                            th (style:"color: red;white-space:nowrap","${it.name}")
+                        }
+                        tr (style:"nowrap")
+                        td (style:"color:blue;text-align:center;font-weight:bold;","- Values -")
+                        it.value.each {
+                            if (it instanceof Map) {
+                                td ()
+                                it.each {
+                                    if (!it.key.equals("name")) {
+                                        html.yield (style:"color: green","${it.key} => ")
+                                        html.yield (style:"color: blue","${it.value}")
+                                        br ()
+                                    }
+                                }
+                            } else {
+                                td (style:"color: blue","${it}")
+                            }
+                        }
+                    } else if (it.value instanceof Map) {
+                        td ()
+                        it.value.each {
+                            html.yield (style:"color: green","${it.key} => ")
+                            html.yield (style:"color: blue","${it.value}")
+                            br ()
+                        }
+                    } else {
+                        td (style:"color: blue","${it.value}")
+                    }
+                    tr ()
+                }
+            }
+        }
+    }
+    render(contentType: "text/html", data: writer, status: 200)
+}
+
 def test() {
     def msg = ["Http API Test Success!"]
     if (infoBool) log.info msg
@@ -129,10 +192,11 @@ def uninstalled() {
 }
 def updated() {
 	// Added additional logging from @kurtsanders
-    log.info "#####################################################################################"
-    log.info "${state.accessToken}~${state.endpointURL}"
+    log.info "#######################################################################################################"
+    log.info "Local Access API String for Xbar Plugin: ${state.accessToken}~${state.endpointURL}"
+    log.info "Cloud Access API String for Xbar Plugin: ${getFullApiServerUrl()}/debug?access_token=${state.accessToken}"
     log.info "The Xbar Oauth API has been setup. Add the following API string to the Xbar Plugin Browser Hubitat Oauth String field"
-    log.info "#####################################################################################"
+    log.info "#######################################################################################################"
 	unsubscribe()
     if (infoBool) {
         log.info "Info logging messages has been activated for the next 30 minutes."
@@ -397,42 +461,52 @@ def getBatteryInfo(dev) {
 }
 
 def getTempData() {
-	def resp = []
+    def resp = []
     temps.each {
-        resp << [name: it.displayName, value: it.currentTemperature, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentTemperature) {
+            resp << [name: it.displayName, value: it.currentTemperature, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     resp.sort { -it.value }
     return resp
 }
 def getContactData() {
-	def resp = []
+    def resp = []
     contacts.each {
-        resp << [name: it.displayName, value: it.currentContact, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentContact) {
+            resp << [name: it.displayName, value: it.currentContact, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
 def getRelativeHumidityMeasurementData() {
-	def resp = []
+    def resp = []
     relativeHumidityMeasurements.each {
-        resp << [name: it.displayName, value: it.currentHumidity, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentHumidity) {
+            resp << [name: it.displayName, value: it.currentHumidity, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
 def getPresenceData() {
-	def resp = []
+    def resp = []
     def eventlogData = []
     def timeFormatString = timeFormatBool?'EEE MMM dd HH:mm z':'EEE MMM dd hh:mm a z'
     presences.each {
-		it.events().each {
+        it.events().each {
         }
-        resp << [name: it.displayName, value: it.currentPresence, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentPresence) {
+            resp << [name: it.displayName, value: it.currentPresence, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
 def getMotionData() {
-	def resp = []
+    def resp = []
     motions.each {
-        resp << [name: it.displayName, value: it.currentMotion, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentMotion) {
+            resp << [name: it.displayName, value: it.currentMotion, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
@@ -474,80 +548,91 @@ def getSwitchData() {
             ]
 //            x.each {k, v -> log.debug "${k.padRight(20,"-")}: ${v}" }
         }
-        resp << [
-            name		: it.displayName,
-            value		: it.currentSwitch,
-            id 			: it.id,
-            isDimmer 	: it.hasCommand('setLevel'),
-            colorRGBName: colorRGBName,
-            dimmerLevel : it.currentLevel,
-            isRGB		: isRGBbool,
-            hue			: hue ? hue.toFloat().round() : hue,
-            saturation	: saturation ? saturation.toFloat().round() : saturation,
-            eventlog	: getEventsOfDevice(it)
-        ]
+        if (it.currentSwitch) {
+            resp << [
+                name		: it.displayName,
+                value		: it.currentSwitch,
+                id 			: it.id,
+                isDimmer 	: it.hasCommand('setLevel'),
+                colorRGBName: colorRGBName,
+                dimmerLevel : it.currentLevel,
+                isRGB		: isRGBbool,
+                hue			: hue ? hue.toFloat().round() : hue,
+                saturation	: saturation ? saturation.toFloat().round() : saturation,
+                eventlog	: getEventsOfDevice(it)
+            ]
+        }
     }
     return resp
 }
 def getLockData() {
 	def resp = []
     locks.each {
-        resp << [name: it.displayName, value: it.currentLock, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentLock) {
+            resp << [name: it.displayName, value: it.currentLock, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
 def getMusicPlayerData() {
     def resp = []
     musicplayersWebSocket.each {
-        resp << [
-            name							: it.displayName,
-            manufacturer					: it?.getManufacturerName()?:it?.currentDeviceStyle?:null,
-            groupRolePrimary				: it?.currentGroupRole=='primary',
-            groupRole						: it?.currentGroupRole,
-            id 								: it.id,
-            level							: it.currentVolume,
-            mute							: it.currentMute,
-            presets							: it.currentPresets?:null,
-            status							: it.currentPlaybackStatus,
-            audioTrackData					: it.currentAudioTrackData?:null,
-            alexaPlaylists 					: it.currentAlexaPlaylists?:null,
-            supportedCommands				: supportedMusicPlayerDeviceCommands(),
-            groupVolume						: it.currentGroupVolume?:null
-        ];
+        if (it.currentPlaybackStatus) {
+            resp << [
+                name							: it.displayName,
+                manufacturer					: it?.getManufacturerName()?:it?.currentDeviceStyle?:null,
+                groupRolePrimary				: it?.currentGroupRole=='primary',
+                groupRole						: it?.currentGroupRole,
+                id 								: it.id,
+                level							: it.currentVolume,
+                mute							: it.currentMute,
+                presets							: it.currentPresets?:null,
+                status							: it.currentPlaybackStatus,
+                audioTrackData					: it.currentAudioTrackData?:null,
+                alexaPlaylists 					: it.currentAlexaPlaylists?:null,
+                supportedCommands				: supportedMusicPlayerDeviceCommands(),
+                groupVolume						: it.currentGroupVolume?:null
+            ];
+        }
     }
 
     return resp
 }
 def getThermoData() {
 
-	def resp = []
+    def resp = []
     if(thermos) {
         thermos.each {
             def timespan = now() - state.lastThermostatOperatingState
-            resp << [displayName: it.displayName,
-                    id: it.id,
-                    thermostatOperatingState: it.currentThermostatOperatingState,
-                    thermostatMode: it.currentThermostatMode,
-                    coolingSetpoint: it.currentCoolingSetpoint,
-                    heatingSetpoint: it.currentHeatingSetpoint,
-                    lastOperationEvent: timespan
+            resp << [name:it.displayName,
+                     displayName: it.displayName,
+                     id: it.id,
+                     thermostatOperatingState: it.currentThermostatOperatingState,
+                     thermostatMode: it.currentThermostatMode,
+                     coolingSetpoint: it.currentCoolingSetpoint,
+                     heatingSetpoint: it.currentHeatingSetpoint,
+                     lastOperationEvent: timespan
                     ];
         }
     }
-//    if (debugBool) log.debug "getThermoData: ${resp[2]}"
+    //    if (debugBool) log.debug "getThermoData: ${resp[2]}"
     return resp
 }
 def getWaterData() {
-	def resp = []
+    def resp = []
     waters.each {
-        resp << [name: it.displayName, value: it.currentWater, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentWater) {
+            resp << [name: it.displayName, value: it.currentWater, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
 def getValveData() {
-	def resp = []
+    def resp = []
     valves.each {
-        resp << [name: it.displayName, value: it.currentValve, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        if (it.currentValve) {
+            resp << [name: it.displayName, value: it.currentValve, id : it.id, battery: getBatteryInfo(it), eventlog: getEventsOfDevice(it)];
+        }
     }
     return resp
 }
@@ -621,10 +706,11 @@ def getMainDisplayData() {
 def getStatus() {
     def timeStamp = new Date().format("h:mm:ss a", location.timeZone);
     def lastUpdateTime = new Date().format("EEE, MMM d, h:mm a", location.timeZone)
-    log.info "The Hubitat → Xbar Plugin 'getStatus()' function called at ${timeStamp} by ${params?.nodename}"
-    state.pythonVersion = params.pythonVersion
-    state.scriptPath = params.scriptPath.replaceFirst('.$','')
-    state.scriptFilename = params.scriptFilename
+    state.nodename = params?.nodename?.replaceFirst('.local$','')
+    log.info "The Hubitat → Xbar Plugin 'getStatus()' function called at ${timeStamp} by ${state?.nodename}"
+    state.pythonVersion = params?.pythonVersion
+    state.scriptPath = params?.scriptPath?.replaceFirst('.$','')
+    state.scriptFilename = params?.scriptFilename
     if (debugBool) log.debug "state.scriptPath=${state?.scriptPath}"
     if (debugBool) log.debug "state.scriptFilename=${state?.scriptFilename}"
     if (debugBool) log.debug "state.pythonVersion = ${state?.pythonVersion}"
@@ -632,7 +718,7 @@ def getStatus() {
         log.info "API test was successfull"
         return
     }
-    def newLabel = "${app.name}<span style='color:green;'> <font size='-1'>(Polled by ${params.nodename}@ ${lastUpdateTime.replace("AM", "am").replace("PM","pm")})</font></span>"
+    def newLabel = "${app.name}<span style='color:green;'> <font size='-1'>(Polled by ${state?.nodename} @ ${lastUpdateTime.replace("AM", "am").replace("PM","pm")})</font></span>"
     app.updateLabel(newLabel)
     def tempData = getTempData()
     def contactData = getContactData()
@@ -812,7 +898,7 @@ private mainPage() {
 def APIPage() {
     dynamicPage(name: "APIPage") {
         help()
-        section("API OAuth Setup") {
+        section(sectionHeader("API OAuth Setup")) {
             if (!state.accessToken) {
                 paragraph "<p style='color:red'>Required: The Xbar API OAuth token has not been setup. Tap below to enable it.</p>"
                 href name: "enableAPIPageLink", title: "Enable API", description: "", page: "enableAPIPage"
@@ -821,13 +907,20 @@ def APIPage() {
                 state.endpoint=getFullLocalApiServerUrl()+ "/?access_token=${state.accessToken}"
                 def localUri = getFullLocalApiServerUrl()+ "/Test/" + "?access_token=${state.accessToken}"
                 def XbarAPIString = "${state.accessToken}~${state.endpointURL}"
-                paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste the following API string from the red box below into <a href=xbar://app.xbarapp.com/openPlugin>Xbar's Plugin Browser View for <b>Hubitat_XBar.5m.py</b> <i>'Hubitat Oauth String'</i></a>"
-                paragraph "<html><head></b><style>p.ex1{border: 5px solid red; width: 520px; padding-right: 10px; padding-left: 20px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b></body></html>"
+                def XbarAPICloudString = "${state.accessToken}~${getFullApiServerUrl()}"
+                if (debugBool) log.debug "state.accessToken = ${state.accessToken}"
+                if (debugBool) log.debug "getFullApiServerUrl = ${getFullApiServerUrl()}"
+                if (debugBool) log.debug "state.accessToken = ${state.accessToken}"
+
+                if (debugBool) log.debug "cloud access api = ${getFullApiServerUrl()}/GetStatus?access_token=${state.accessToken}"
+                paragraph "The Xbar API has been created below!<br><br>Activate Xbar on the Mac.  Copy & paste ONE  of the following API string from the red or blue boxes below into <a href=xbar://app.xbarapp.com/openPlugin>Xbar's Plugin Browser View for <b>Hubitat_XBar.5m.py</b> <i>'Hubitat Oauth String'</i></a>"
+                paragraph "<html><head></b>Local Access (access only from within your home network): <style>p.ex1{border: 5px solid red; width: 820px; padding-right: 10px; padding-left: 20px;}</style></head><body><p class='ex1'><b>${XbarAPIString}/<br></b>"
+                paragraph "</b>Cloud Access (access anywhere you have network access to cloud.hubitat.com): <style>p.ex2{border: 5px solid blue; width: 1000px; padding-right: 10px; padding-left: 20px;}</style></head><body><p class='ex2'><b>${XbarAPICloudString}/<br></b></body></html>"
             }
         }
-        section("API Testing Options") {
+        section(sectionHeader("API Testing Options")) {
             input "testAPI", "bool",
-                title: "Select to test the oauth http API access to this Hubitat application",
+                title: "Select to test the oauth http API local network access to this Hubitat application",
                 submitOnChange: true,
                 required: false
             if (testAPI) {
@@ -836,7 +929,7 @@ def APIPage() {
                     if (debugBool) log.debug "Testing http GET app access: '${localUri}'"
                     def params = [
                         uri        : hubHttpIp,
-                        path       : "/apps/api/${app.getId()}/Test/",
+                        path       : "/apps/api/${app.getId()}/Test",
                         query      : ["access_token": "${state.accessToken}"]
                     ]
                     // log.debug "getHttp params Map = '${params}'"
@@ -860,18 +953,19 @@ def APIPage() {
                 submitOnChange: true,
                 required: false
             if (sendAPI) {
-                paragraph "Enable Pushover™ and/or Twilio™ service(s). (Must install virtual device(s) and have an active service account):"
-                input ("pushoverEnabled", "bool", title: "Use Pushover™ and/or Twilio™ Service(s) for Alert Notifications", required: false, submitOnChange: true)
+                paragraph "Enable Notification Device"
+                input ("pushoverEnabled", "bool", title: "Use Pushover™ for Alert Notifications", required: false, submitOnChange: true)
                 if (pushoverEnabled) {
                     input(name: "pushoverDevices", type: "capability.notification", title: "Select a device below", required: false, multiple: true,
                           description: "Select notification device(s)", submitOnChange: true)
                     paragraph ""
                 }
                 if (pushoverDevices) {
-                    input ("okSend", "bool", title: "Select to send API strings NOW to ${pushoverDevices}?", defaultValue: false, required: false, submitOnChange: true)
+                    input ("okSend", "bool", title: "Select to send both API strings to ${pushoverDevices.join(', ')}", defaultValue: false, required: false, submitOnChange: true)
                     if (okSend) {
-                        def msgData = "Add the following API string below to the ${app.name} Plugin in the 'Xbar Plugin Browser View'"
-                        msgData += "\n\n${state.accessToken}"+"~${state.endpointURL}"
+                        def msgData = "[HTML]Add only ONE of the following API strings below to the ${app.name} Plugin in the 'Xbar Plugin Browser View'"
+                        msgData += "\n\n<font color=\"red\">Local Access API string:</font>\n${state.accessToken}"+"~${state.endpointURL}\n\n<font color=\"red\">Cloud Access API string:</font>\n${getFullApiServerUrl()}/debug?access_token=${state.accessToken}"
+                        msgData += "\n\n<a href=\"xbar://app.xbarapp.com/openPlugin/\">Link to Xbar's Plugin Browser View for Hubitat_XBar.5m.py</a>"
                         if (settings.pushoverDevices != null) {
                             settings.pushoverDevices.each {							// Use notification devices on Hubitat
                                 it.deviceNotification(msgData)
@@ -884,7 +978,14 @@ def APIPage() {
                 }
             }
         }
-        section() {
+
+        section(sectionHeader("View Device, Sensor and Preferences in HTML Page")) {
+            def localURL = "${getFullLocalApiServerUrl()}/debug?access_token=${state.accessToken}"
+            def cloudURL = "${getFullApiServerUrl()}/debug?access_token=${state.accessToken}"
+            paragraph("Cloud Test Link <i>(opens in a new window)</i>: <a href=\"${cloudURL}\" target=\"_blank\">${cloudURL}</a>")
+            paragraph("Local Test Link <i>(opens in a new window)</i>: <a href=\"${localURL}\" target=\"_blank\">${localURL}</a>")
+        }
+        section(sectionHeader("Disable API Access")) {
             href "disableAPIPage", title: "Disable/Reset API (Only use this if you want to generate a new oauth secret)", description: ""
         }
     }
@@ -1302,7 +1403,7 @@ def optionsPage() {
         }
         section("Required: Sort sensors in menu by Name and Active Status") {
 			input "sortSensorsName", "bool",
-				title: "Sort sensors in menu by name",
+				title: "Sort sensors in menu by device name",
                 default: true,
 				required: true
 			input "sortSensorsActive", "bool",
