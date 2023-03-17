@@ -47,7 +47,10 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 		* Press 'Next'
 		* Wait for HPM download and install to complete and **'Hubitat → Xbar App'** should automatically launch for configuration.
 		* Enable/Authorize OAuth API String in **'Hubitat → Xbar App'**
-		* Select ONE of the generated OAuth API strings from the screen and (⌘-C) copy it (format xxx-xxx~http://xxx) from the screen. ==(The local API access string allows access when your Apple  computer is connected to your Home Network (same as Hubitat Elevation Hub).  The cloud API access string allows 'anywhere' access from both Home and outside your Home Network (anywhere your computer has network access. Please ensure you have strong security controls on your computer to prevent unwanted access to your Hubitat devices)==
+		* Select ONE of the generated OAuth API strings from the screen and (⌘-C) copy it (format xxx-xxx~http://xxx) from the screen. 
+
+			> The local API access string allows access when your Apple  computer is connected to your Home Network (same as Hubitat Elevation Hub).  The cloud API access string allows 'anywhere' access from both Home and outside your Home Network (anywhere your computer has network access. Please ensure you have strong security controls on your computer to prevent unwanted access to your Hubitat devices.
+
 *  Apple© Computer macOS Steps
 	* Install the [Xbar](https://xbarapp.com/) application base software by [clicking here](https://github.com/matryer/xbar/releases/download/v2.1.7-beta/xbar.v2.1.7-beta.dmg) to download and install XBar application  
 	   * After Xbar install, there should be a 'xbar' in your macOS menubar as shown below <img src="http://xbarapp.com/public/img/xbar-menu-preview.png" width="300">
@@ -66,7 +69,9 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	```
 	
 	* **Xbar Plugin Configuration Steps** 
-		* Configure the required OAuth API (format xxx-xxx~http://xxx) string in the Xbar 'Hubitat_XBar.5m.py' plugin preferences screen.  ==(The local API access string allows access when your Apple  computer is connected to your Home Network (same as Hubitat Elevation Hub).  The cloud API access string allows 'anywhere' access from both Home and outside your Home Network (anywhere your computer has network access. Please ensure you have strong security controls on your computer to prevent unwanted access to your Hubitat devices)==
+		* Configure the required OAuth API (format xxx-xxx~http://xxx) string in the Xbar 'Hubitat_XBar.5m.py' plugin preferences screen.
+
+			> The local API access string allows access when your Apple  computer is connected to your Home Network (same as Hubitat Elevation Hub).  The cloud API access string allows 'anywhere' access from both Home and outside your Home Network (anywhere your computer has network access. Please ensure you have strong security controls on your computer to prevent unwanted access to your Hubitat devices.
 
 			![Hubitat → Xbar API Oauth Screen](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/APIOauthScreen.jpg)
 
