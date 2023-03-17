@@ -102,7 +102,7 @@ Sensor battery levels can be displayed for devices that have a battery capabilit
 	* The **Hubitat → Xbar** Hubitat application developed in Groovy language and installed from HPM on your Hubitat Elevation Hub.  
 * You must use HPM for all app code updates to the **Hubitat → Xbar** app installed to your Hubitat Elevation Hub.  This is easy and semi-automatic when HPM notifies you of an upgrade.
 * Immediately after an HPM update of the **Hubitat → Xbar** app, you must highlight and copy (⌘-C) each of the following  Apple Terminal commands below and paste (⌘-V) each into the  Apple Terminal screen and press Enter so they execute individually:
-* ==Please note that if you have chosen a different 'run every frequency' of other than the default of '5' (every 5 minutes), you will need to first change the run every frequency value back to to '5' (every 5 minutes) which will rename the xbar plugin back to **Hubitat_XBar.5m.py**.  After the new **Hubitat_XBar.5m.py** is downloaded to the xbar plugin folder, and you have confirmed that the application is working as expected, you may change the xbar run every frequency value.==
+> Please note that if you have chosen a different 'run every frequency' of other than the default of '5' (every 5 minutes), you will need to first change the run every frequency value back to to '5' (every 5 minutes) which will rename the xbar plugin back to **Hubitat_XBar.5m.py**.  After the new **Hubitat_XBar.5m.py** is downloaded to the xbar plugin folder, and you have confirmed that the application is working as expected, you may change the xbar run every frequency value.
 
 	```Shell
 	cd ~/Library/Application\ Support/xbar/plugins
