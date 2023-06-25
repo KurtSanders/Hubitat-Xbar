@@ -6,7 +6,7 @@
 	"dateReleased": "2023-06-25",
 	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar#hubitat--xbar-for-use-with-hubitat-elevation--apple",
 	"licenseFile": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/LICENSE",
-	"releaseNotes": "After this HPM upgrade, you must manually upgrade the Xbar plugin 'Hubitat_XBar.5m.py' to this same 1.0.4 release in the Xbar plugin directory. Please follow the install instructions in the documentation.\n\nThis release has the following improvements:\n\n• Fixed HTTP 404 issue with removing the \ before the ?",
+	"releaseNotes": "After this HPM upgrade, you must manually upgrade the Xbar plugin 'Hubitat_XBar.5m.py' to this same 1.0.4 release in the Xbar plugin directory. Please follow the install instructions in the documentation.\n\nThis release has the following improvements:\n\n• Fixed HTTP 404 issue with removing the \\ before the ?",
 	"apps" : [
 		{
 			"id" : "cb421dcc-2aa9-4d0c-82eb-40497d34623c",
