@@ -20,7 +20,7 @@ import groovy.time.*
 // import groovy.xml.MarkupBuilder
 import groovy.xml.*
 
-String version() {return "1.0.3"}
+String version() {return "1.0.4"}
 
 definition(
     name: "Hubitat → XBar Plugin",

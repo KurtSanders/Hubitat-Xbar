@@ -1,12 +1,12 @@
 {
 	"packageName": "Hubitat → Xbar App for the Apple  macOS™ Menubar",
 	"author": "Kurt Sanders",
-	"version": "1.0.3",
-	"minimumHEVersion": "2.3.4.150",
-	"dateReleased": "2023-03-16",
+	"version": "1.0.4",
+	"minimumHEVersion": "2.3.5.152",
+	"dateReleased": "2023-06-25",
 	"documentationLink": "https://github.com/KurtSanders/Hubitat-Xbar#hubitat--xbar-for-use-with-hubitat-elevation--apple",
 	"licenseFile": "https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/LICENSE",
-	"releaseNotes": "After this HPM upgrade, you must manually upgrade the Xbar plugin 'Hubitat_XBar.5m.py' to this same 1.0.3 release in the Xbar plugin directory. Please follow the install instructions in the documentation.\n\nThis release has the following improvements:\n\n• Removed '.local' from polled machine name.\n\n• Removed corrupt sensors/devices that do not have a valid/expected capability value.\n\n• New → Added cloud API access string for users who are outside their home hub's local network.\n\n• New → Added a debug option to view all selected device/sensors and preferences as an HTML page at bottom of the 'API Access Setup' page",
+	"releaseNotes": "After this HPM upgrade, you must manually upgrade the Xbar plugin 'Hubitat_XBar.5m.py' to this same 1.0.4 release in the Xbar plugin directory. Please follow the install instructions in the documentation.\n\nThis release has the following improvements:\n\n• Fixed HTTP 404 issue with removing the \ before the ?",
 	"apps" : [
 		{
 			"id" : "cb421dcc-2aa9-4d0c-82eb-40497d34623c",

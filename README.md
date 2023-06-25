@@ -1,6 +1,6 @@
 ## Hubitat → Xbar (For Use with Hubitat Elevation® & Apple®![macOS logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
 -- 
-### Version 1.0.3 (March 17, 2023) 
+### Version 1.0.4 (June 25, 2023) 
 
 ![Hubitat → Xbar App-V2 logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar-Macbook-Pro.png)
 
