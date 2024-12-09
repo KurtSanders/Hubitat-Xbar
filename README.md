@@ -1,4 +1,4 @@
-## Hubitat → Xbar (For Use with Hubitat Elevation® & Apple®![macOS logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
+## Hubitat on Apple Menubar (https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
 -- 
 ### Version 1.0.4 (June 25, 2023) 
 
