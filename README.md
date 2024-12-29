@@ -1,5 +1,5 @@
-## Hubitat on Apple Menubar (https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg))
--- 
+## Hubitat on Apple Menubar <img src=https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/macos_logo.jpg>
+
 ### Version 1.0.4 (June 25, 2023) 
 
 ![Hubitat → Xbar App-V2 logo](https://raw.githubusercontent.com/KurtSanders/Hubitat-Xbar/main/Images/Hubitat-Xbar-Macbook-Pro.png)
@@ -16,7 +16,7 @@
 * Access from Home Network or Anywhere API strings
 
 ### Overview:
-Monitor and control [Hubitat™](https://hubitat.com/) devices, sensors, Hubitat® Safety Monitor, Modes from the Apple  MacOS Menu Bar.  This application is controlled via the Hubitat user app named **'Hubitat → XBar App'**.  A Python3 script file is installed locally on the Apple  Mac in the Xbar's Application plugin folder (~/Library/Application\ Support/xbar/plugins) and configured with your Hubitat OAuth application string.
+Monitor and control [Hubitat™](https://hubitat.com/) devices, sensors, Hubitat® Safety Monitor, and Modes from the Apple  MacOS Menu Bar.  This application is controlled via the Hubitat user app named **'Hubitat → XBar App'**.  A Python3 script file is installed locally on the Apple  Mac in the Xbar's Application plugin folder (~/Library/Application\ Support/xbar/plugins) and configured with your Hubitat OAuth application string.
 
 The Hubitat → Xbar application works with the [Xbar](https://xbarapp.com/dl) as a custom XBar Plugin and is controlled via the Hubitat → Xbar App.  Hubitat → Xbar App **displays** thermostat information, temperature, relative humidity, event-log statistics, contacts, music players, presence devices, locks, lights, and motion sensors.  It can also **control** color control (RGB) device levels, switch/dimmer level devices, locks and also thermostat control via the MacOS menubar.  The Mac menubar icon can be a thermostat reading, contact sensor, lock sensor or switch sensor and upon clicking the displayed state icon, renders more detailed information on all the sensors selected in the App's GUI.
 
